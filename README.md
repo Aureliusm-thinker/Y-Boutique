@@ -2,7 +2,7 @@
 
 A modern, curated online boutique (fashion & lifestyle) with a planned AI/ML layer for personalization, styling assistance and smarter operations.
 
-> **Status:** Phase 0/1 — planning done, scaffold in place (2026-11-11)
+> **Status:** Phase 1 — Sprint 1 (foundations & catalogue management) complete (2026-11-12)
 > "Yvette" is the working project name; the final brand name is an open question.
 
 ## Repository layout
@@ -29,12 +29,23 @@ docker compose -f infra/docker-compose.yml up -d
 cd apps/api
 ./mvnw spring-boot:run -Dspring-boot.run.profiles=dev      # Windows: mvnw.cmd ...
 
-# 3. Start the storefront  →  http://localhost:3000
+# 3. Start the storefront  →  http://localhost:3000  (back office: http://localhost:3000/admin)
 cd apps/web
 cp .env.example .env.local
 npm install
 npm run dev
 ```
+
+### Back office (local dev)
+
+The `dev` profile creates an owner account on first start:
+
+| Email | Password |
+|---|---|
+| `owner@yvette.local` | `yvette-dev-owner` |
+
+These exist only in the `dev` profile. In any other environment the API refuses to start without
+`JWT_SECRET`, and the first owner is created from `YVETTE_BOOTSTRAP_OWNER_EMAIL` / `_PASSWORD`.
 
 ### Tests
 
@@ -47,23 +58,32 @@ cd apps/web && npm run lint && npm run build
 
 | Area | Status |
 |---|---|
-| Catalogue API: categories, product list (paged, by category), product detail with per-size stock | ✅ |
-| Behavioural event capture (`POST /api/v1/events`) — the data foundation for AI | ✅ |
-| Security baseline: public storefront endpoints, everything else requires auth, admin routes role-gated, CORS | ✅ (no login yet) |
-| Storefront: home, shop with category filter, product page with size picker, 404, consent banner + `product_view` tracking | ✅ |
-| Cart, checkout, payments, accounts, admin UI, reviews, promotions | ⏳ per [MVP backlog](docs/06-mvp-backlog.md) |
+| Storefront: home, shop with category filter, product page with size picker, consent banner + `product_view` tracking | ✅ |
+| Staff sign-in (signed token in an httpOnly cookie), roles per the permission matrix, login rate limiting | ✅ |
+| Back office: dashboard, products (create, edit, variants, images, publish/unpublish/archive), categories, low-stock inventory, staff accounts | ✅ |
+| Publishing rules: category, material, description, image and a priced variant are required | ✅ |
+| Stock changes recorded with reason, note, person and resulting level | ✅ |
+| Image uploads (JPEG/PNG/WebP, checked by file content), stored locally in dev | ✅ |
+| Two-factor login for staff, error tracking (Sentry), CSV import/export | ⏳ next |
+| Cart, checkout, payments, customer accounts, reviews, promotions | ⏳ per [MVP backlog](docs/06-mvp-backlog.md) |
 | AI features | ⏳ Phase 3 ([AI/ML strategy](docs/04-ai-ml-strategy.md)) |
 
 ## API endpoints
 
 | Method | Path | Access |
 |---|---|---|
-| GET | `/api/v1/catalog/categories` | public |
-| GET | `/api/v1/catalog/products?category=&page=&size=` | public |
-| GET | `/api/v1/catalog/products/{slug}` | public |
+| GET | `/api/v1/catalog/categories`, `/products`, `/products/{slug}` | public |
 | POST | `/api/v1/events` | public (sent only with consent) |
-| GET | `/actuator/health` | public |
-| * | `/api/v1/admin/**` | staff roles (not implemented yet) |
+| POST | `/api/v1/auth/staff/login` | public (rate limited) |
+| GET | `/api/v1/admin/me` | any staff |
+| GET/POST/PUT | `/api/v1/admin/products`, `/products/{id}` | read: owner, manager, inventory, marketing · write: owner, manager, inventory |
+| POST | `/api/v1/admin/products/{id}/publish` · `/unpublish` · `/archive` | owner, manager, inventory |
+| GET/POST/PUT | `/api/v1/admin/categories` | as products |
+| POST | `/api/v1/admin/inventory/adjustments` | owner, manager, inventory |
+| GET | `/api/v1/admin/inventory/low-stock`, `/variants/{id}/adjustments` | as product read |
+| POST | `/api/v1/admin/media` | owner, manager, inventory |
+| GET/POST/PUT | `/api/v1/admin/staff` | owner only |
+| GET | `/media/**`, `/actuator/health` | public |
 
 ## Project documents
 

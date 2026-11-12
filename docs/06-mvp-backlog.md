@@ -9,21 +9,23 @@ Priority uses MoSCoW. Estimates (story points) to be added during sprint plannin
 
 ---
 
+> **Sprint 1 status (2026-11-12):** ✅ done · 🟡 partly done. E0-3: roles, login and rate limiting are done; two-factor login (MFA) is still to do. E0-4 (Sentry/uptime) needs an account. E1-5 (CSV) is a "Should" and moved to a later sprint.
+
 ## Epic E0 — Foundations (Sprint 1)
 | ID | Story | Acceptance criteria | Pri |
 |---|---|---|---|
-| E0-1 | As a developer, I want a monorepo with CI, linting and tests so that quality is enforced from day one | PRs run lint, type-check, tests; main auto-deploys to staging | M |
-| E0-2 | As a developer, I want local dev via Docker Compose (Postgres, Redis, API, storefront) | `docker compose up` gives a working stack with seed data | M |
-| E0-3 | As the Owner, I want staff accounts with roles so that people only see what they need | Roles per permission matrix; MFA for admin users | M |
+| E0-1 | As a developer, I want a monorepo with CI, linting and tests so that quality is enforced from day one | ✅ PRs run lint, type-check, tests; main auto-deploys to staging | M |
+| E0-2 | As a developer, I want local dev via Docker Compose (Postgres, Redis, API, storefront) | ✅ `docker compose up` gives a working stack with seed data | M |
+| E0-3 | As the Owner, I want staff accounts with roles so that people only see what they need | 🟡 Roles per permission matrix; MFA for admin users | M |
 | E0-4 | As the business, I want error tracking and uptime monitoring | Sentry + uptime alerts configured for staging & prod | M |
 
 ## Epic E1 — Catalogue Management (Sprint 1)
 | ID | Story | Acceptance criteria | Pri |
 |---|---|---|---|
-| E1-1 | As Inventory Staff, I want to create a product with variants (size/colour), prices and images | Product saved as draft/active; variants have unique SKUs; images auto-optimised (FR-AD-02) | M |
-| E1-2 | As Inventory Staff, I want to set structured attributes (colour, material, fit, occasion, style tags) | Required attributes validated before publishing (FR-DA-04) | M |
-| E1-3 | As Inventory Staff, I want to organise products into collections and categories | Manual & rule-based collections | M |
-| E1-4 | As Inventory Staff, I want to adjust stock with a reason | Adjustment history recorded; low-stock alert at threshold (FR-AD-04) | M |
+| E1-1 | As Inventory Staff, I want to create a product with variants (size/colour), prices and images | ✅ Product saved as draft/active; variants have unique SKUs; images auto-optimised (FR-AD-02) | M |
+| E1-2 | As Inventory Staff, I want to set structured attributes (colour, material, fit, occasion, style tags) | ✅ Required attributes validated before publishing (FR-DA-04) | M |
+| E1-3 | As Inventory Staff, I want to organise products into collections and categories | ✅ Manual & rule-based collections | M |
+| E1-4 | As Inventory Staff, I want to adjust stock with a reason | ✅ Adjustment history recorded; low-stock alert at threshold (FR-AD-04) | M |
 | E1-5 | As Inventory Staff, I want to import/export products via CSV | Validates rows, reports errors | S |
 
 ## Epic E2 — Storefront & Discovery (Sprint 2)
