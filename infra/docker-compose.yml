@@ -1,0 +1,36 @@
+# Local development services. Start with:  docker compose -f infra/docker-compose.yml up -d
+name: yvette
+
+services:
+  postgres:
+    # Postgres 17 with the pgvector extension (used for AI semantic search / recommendations in Phase 3)
+    image: pgvector/pgvector:pg17
+    environment:
+      POSTGRES_DB: yvette
+      POSTGRES_USER: yvette
+      POSTGRES_PASSWORD: yvette
+    ports:
+      - "55432:5432"   # uncommon host port avoids clashing with local/WSL Postgres
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U yvette -d yvette"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    # Caching, cart reservations and background job queues (from Sprint 3)
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+
+  mailpit:
+    # Catches all outgoing email locally. Web UI: http://localhost:18025
+    image: axllent/mailpit:latest
+    ports:
+      - "11025:1025"   # SMTP (host port avoids local clashes)
+      - "18025:8025"   # web UI: http://localhost:18025
+
+volumes:
+  pgdata:
