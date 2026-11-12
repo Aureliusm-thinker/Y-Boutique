@@ -1,0 +1,15 @@
+# OS / editors
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.iml
+
+# Env files (keep the examples)
+.env
+.env.*
+!.env.example
+
+# Python (services/ai)
+__pycache__/
+.venv/
