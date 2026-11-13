@@ -36,10 +36,13 @@ public class OrderService {
     private final CartRepository carts;
     private final ApplicationEventPublisher publisher;
     private final Duration paymentWindow;
+    private final com.yvette.api.staff.LoginRateLimiter lookupLimiter;
 
     public OrderService(OrderRepository orders, InventoryService inventory, PromotionRepository promotions,
                         CartRepository carts, ApplicationEventPublisher publisher,
-                        @Value("${yvette.checkout.payment-window:PT30M}") Duration paymentWindow) {
+                        @Value("${yvette.checkout.payment-window:PT30M}") Duration paymentWindow,
+                        com.yvette.api.staff.LoginRateLimiter lookupLimiter) {
+        this.lookupLimiter = lookupLimiter;
         this.orders = orders;
         this.inventory = inventory;
         this.promotions = promotions;
@@ -114,6 +117,21 @@ public class OrderService {
     @Transactional(readOnly = true)
     public List<Long> unpaidPastPaymentWindow() {
         return orders.findUnpaidPlacedBefore(Instant.now().minus(paymentWindow));
+    }
+
+    /** Finds an order by number + email; repeated misses from one email are slowed down. */
+    @Transactional(readOnly = true)
+    public Order lookup(String number, String email) {
+        String key = "lookup:" + email.strip().toLowerCase(java.util.Locale.ROOT);
+        if (lookupLimiter.isBlocked(key)) throw new com.yvette.api.common.BadRequestException("Too many attempts. Try again in 15 minutes.");
+        Order order = orders.findByNumber(number)
+                .filter(o -> o.getEmail().equalsIgnoreCase(email.strip()))
+                .orElse(null);
+        if (order == null) {
+            lookupLimiter.recordFailure(key);
+            throw new NotFoundException("We couldn't find an order with that number and email");
+        }
+        return order;
     }
 
     public Order findByNumberAndToken(String number, UUID token) {

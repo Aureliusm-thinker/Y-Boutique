@@ -22,10 +22,30 @@ public class TokenService {
 
     private final JwtEncoder encoder;
     private final Duration ttl;
+    private final Duration customerTtl;
 
-    public TokenService(JwtEncoder encoder, @Value("${yvette.security.token-ttl:PT8H}") Duration ttl) {
+    public TokenService(JwtEncoder encoder, @Value("${yvette.security.token-ttl:PT8H}") Duration ttl,
+                        @Value("${yvette.security.customer-token-ttl:P30D}") Duration customerTtl) {
         this.encoder = encoder;
         this.ttl = ttl;
+        this.customerTtl = customerTtl;
+    }
+
+    /** Shopper session (role CUSTOMER). Lives longer than staff sessions: "stay signed in". */
+    public IssuedToken issueCustomer(Long customerId, String email, String name) {
+        Instant now = Instant.now();
+        Instant expiresAt = now.plus(customerTtl);
+        JwtClaimsSet claims = JwtClaimsSet.builder()
+                .issuer(ISSUER)
+                .subject(String.valueOf(customerId))
+                .issuedAt(now)
+                .expiresAt(expiresAt)
+                .claim("email", email)
+                .claim("name", name)
+                .claim(ROLES_CLAIM, List.of("CUSTOMER"))
+                .build();
+        JwsHeader header = JwsHeader.with(MacAlgorithm.HS256).build();
+        return new IssuedToken(encoder.encode(JwtEncoderParameters.from(header, claims)).getTokenValue(), expiresAt);
     }
 
     public record IssuedToken(String value, Instant expiresAt) {}

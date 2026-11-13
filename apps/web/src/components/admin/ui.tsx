@@ -42,3 +42,19 @@ export function ActionMessage({ result }: { result: ActionResult | null }) {
 export function Loading() {
   return <p className="text-sm text-stone-500">Loading…</p>;
 }
+
+export const orderStatusStyle: Record<string, string> = {
+  PENDING_PAYMENT: "bg-stone-100 text-stone-700",
+  PAID: "bg-amber-100 text-amber-900",
+  SHIPPED: "bg-blue-100 text-blue-900",
+  DELIVERED: "bg-green-100 text-green-800",
+  CANCELLED: "bg-stone-200 text-stone-500",
+};
+
+export function OrderStatusBadge({ status }: { status: string }) {
+  return (
+    <span className={`rounded-full px-2 py-0.5 text-xs ${orderStatusStyle[status] ?? "bg-stone-100"}`}>
+      {status.replace("_", " ").toLowerCase()}
+    </span>
+  );
+}

@@ -5,6 +5,10 @@ spring:
     url: ${DB_URL:jdbc:postgresql://localhost:55432/yvette}
     username: ${DB_USER:yvette}
     password: ${DB_PASSWORD:yvette}
+  jackson:
+    deserialization:
+      # Optional yes/no fields left out of a request mean "no" instead of a 400 error.
+      fail-on-null-for-primitives: false
   jpa:
     open-in-view: false
     hibernate:
