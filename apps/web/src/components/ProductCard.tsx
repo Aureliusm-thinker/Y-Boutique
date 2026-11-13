@@ -17,8 +17,12 @@ export function ProductCard({ product }: { product: ProductSummary }) {
             className="object-cover transition-transform duration-500 group-hover:scale-105"
           />
         )}
-        {onSale && (
-          <span className="absolute left-2 top-2 bg-white px-2 py-0.5 text-xs uppercase tracking-wide">Sale</span>
+        {product.soldOut ? (
+          <span className="absolute left-2 top-2 bg-stone-900 px-2 py-0.5 text-xs uppercase tracking-wide text-white">
+            Sold out
+          </span>
+        ) : (
+          onSale && <span className="absolute left-2 top-2 bg-white px-2 py-0.5 text-xs uppercase tracking-wide">Sale</span>
         )}
       </div>
       <h3 className="mt-3 text-sm text-stone-900">{product.title}</h3>
@@ -34,12 +38,12 @@ export function ProductCard({ product }: { product: ProductSummary }) {
   );
 }
 
-export function ProductGrid({ products }: { products: ProductSummary[] }) {
+export function ProductGrid({ products, columns = 4 }: { products: ProductSummary[]; columns?: 3 | 4 }) {
   if (products.length === 0) {
     return <p className="py-12 text-center text-stone-500">No products here yet.</p>;
   }
   return (
-    <div className="grid grid-cols-2 gap-x-4 gap-y-8 sm:grid-cols-3 lg:grid-cols-4">
+    <div className={`grid grid-cols-2 gap-x-4 gap-y-8 sm:grid-cols-3 ${columns === 4 ? "lg:grid-cols-4" : ""}`}>
       {products.map((p) => (
         <ProductCard key={p.id} product={p} />
       ))}

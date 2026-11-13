@@ -19,7 +19,14 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(ConflictException.class)
     ProblemDetail handleConflict(ConflictException ex) {
-        return ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());
+        if (!ex.getErrors().isEmpty()) problem.setProperty("errors", ex.getErrors());
+        return problem;
+    }
+
+    @ExceptionHandler(com.yvette.api.payment.PaymentException.class)
+    ProblemDetail handlePayment(com.yvette.api.payment.PaymentException ex) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.BAD_GATEWAY, ex.getMessage());
     }
 
     @ExceptionHandler(BadRequestException.class)

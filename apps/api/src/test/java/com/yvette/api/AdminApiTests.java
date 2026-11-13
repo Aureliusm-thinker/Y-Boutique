@@ -10,6 +10,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.jayway.jsonpath.JsonPath;
+import com.yvette.api.staff.Totp;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -55,6 +56,59 @@ class AdminApiTests {
     void invalidTokenIsRejected() throws Exception {
         mvc.perform(get("/api/v1/admin/me").header(HttpHeaders.AUTHORIZATION, "Bearer not-a-real-token"))
                 .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void twoStepSignInWithAuthenticatorCode() throws Exception {
+        String owner = login(OWNER_EMAIL, OWNER_PASSWORD);
+        as(owner, post("/api/v1/admin/staff").contentType(MediaType.APPLICATION_JSON).content("""
+                {"email":"mfa@yvette.local","fullName":"Mo Fulfilment","role":"FULFILMENT",
+                 "password":"fulfilment-password-1"}""")).andExpect(status().isCreated());
+
+        String session = login("mfa@yvette.local", "fulfilment-password-1");
+        String setup = as(session, post("/api/v1/admin/me/mfa/setup"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.otpauthUri").value(startsWith("otpauth://totp/Yvette:mfa%40yvette.local?secret=")))
+                .andReturn().getResponse().getContentAsString();
+        String secret = JsonPath.read(setup, "$.secret");
+
+        as(session, post("/api/v1/admin/me/mfa/enable").contentType(MediaType.APPLICATION_JSON)
+                .content("{\"code\":\"000000\"}")).andExpect(status().isBadRequest());
+        as(session, post("/api/v1/admin/me/mfa/enable").contentType(MediaType.APPLICATION_JSON)
+                .content("{\"code\":\"" + Totp.currentCode(secret) + "\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.staff.mfaEnabled").value(true));
+
+        // Password alone now only gives a ticket, not a session.
+        String step1 = mvc.perform(post("/api/v1/auth/staff/login").contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"email\":\"mfa@yvette.local\",\"password\":\"fulfilment-password-1\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.mfaRequired").value(true))
+                .andExpect(jsonPath("$.accessToken").doesNotExist())
+                .andReturn().getResponse().getContentAsString();
+        String ticket = JsonPath.read(step1, "$.mfaTicket");
+
+        mvc.perform(post("/api/v1/auth/staff/login/mfa").contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"mfaTicket\":\"" + ticket + "\",\"code\":\"123456\"}"))
+                .andExpect(status().isUnauthorized());
+        // The code used to enable is spent (replay protection); the next step's code is within the drift window.
+        String next = Totp.codeAt(secret, Totp.currentStep() + 1);
+        mvc.perform(post("/api/v1/auth/staff/login/mfa").contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"mfaTicket\":\"" + ticket + "\",\"code\":\"" + next + "\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.accessToken").isString());
+        // A ticket works only once.
+        mvc.perform(post("/api/v1/auth/staff/login/mfa").contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"mfaTicket\":\"" + ticket + "\",\"code\":\"" + next + "\"}"))
+                .andExpect(status().isUnauthorized());
+
+        // Owner can reset it (lost phone); password-only sign-in works again.
+        String me = as(session, get("/api/v1/admin/me")).andReturn().getResponse().getContentAsString();
+        Integer id = JsonPath.read(me, "$.id");
+        as(owner, post("/api/v1/admin/staff/" + id + "/mfa/reset"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.mfaEnabled").value(false));
+        login("mfa@yvette.local", "fulfilment-password-1");
     }
 
     // ------------------------------------------------------------------ roles

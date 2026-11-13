@@ -10,6 +10,7 @@ const serif = Cormorant_Garamond({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"),
   title: { default: "Yvette — Modern Boutique", template: "%s · Yvette" },
   description: "A curated modern boutique. Your personal boutique — curated for you, styled with you.",
 };

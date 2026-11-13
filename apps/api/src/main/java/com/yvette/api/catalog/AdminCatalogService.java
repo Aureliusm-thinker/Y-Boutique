@@ -7,6 +7,7 @@ import com.yvette.api.catalog.AdminCatalogDtos.AdminProductSummary;
 import com.yvette.api.catalog.AdminCatalogDtos.AdminVariant;
 import com.yvette.api.catalog.AdminCatalogDtos.CategoryUpsertRequest;
 import com.yvette.api.catalog.AdminCatalogDtos.ProductUpsertRequest;
+import com.yvette.api.catalog.AdminCatalogDtos.RelatedProduct;
 import com.yvette.api.catalog.AdminCatalogDtos.VariantUpsert;
 import com.yvette.api.common.BadRequestException;
 import com.yvette.api.common.ConflictException;
@@ -31,6 +32,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -44,9 +46,12 @@ public class AdminCatalogService {
     private final InventoryService inventory;
     private final EntityManager em;
     private final String currency;
+    private final JdbcClient jdbc;
 
     public AdminCatalogService(ProductRepository products, CategoryRepository categories, InventoryService inventory,
-                               EntityManager em, @Value("${yvette.store.currency:USD}") String currency) {
+                               EntityManager em, @Value("${yvette.store.currency:KES}") String currency,
+                               JdbcClient jdbc) {
+        this.jdbc = jdbc;
         this.products = products;
         this.categories = categories;
         this.inventory = inventory;
@@ -97,6 +102,7 @@ public class AdminCatalogService {
         product = products.saveAndFlush(product);
         addNewVariants(product, req.variants(), staffId);
         product.replaceImages(toImageData(req));
+        if (req.relatedProductIds() != null) setRelated(product.getId(), req.relatedProductIds());
         return toDetail(product);
     }
 
@@ -130,6 +136,7 @@ public class AdminCatalogService {
         product.replaceImages(toImageData(req));
         em.flush();
         addNewVariants(product, req.variants(), staffId);
+        if (req.relatedProductIds() != null) setRelated(product.getId(), req.relatedProductIds());
 
         // A live product must stay publishable.
         if (product.getStatus() == ProductStatus.ACTIVE) {
@@ -163,6 +170,12 @@ public class AdminCatalogService {
             problems.add("Every variant needs a price above zero");
         }
         return problems;
+    }
+
+    public AdminProductDetail updateRelated(Long id, List<Long> relatedIds) {
+        Product product = find(id);
+        setRelated(id, relatedIds);
+        return toDetail(product);
     }
 
     // ------------------------------------------------------------------ categories
@@ -243,6 +256,29 @@ public class AdminCatalogService {
         }
     }
 
+    private void setRelated(Long productId, List<Long> relatedIds) {
+        List<Long> ids = relatedIds.stream().distinct().filter(id -> !id.equals(productId)).toList();
+        if (products.findAllById(ids).size() != ids.size()) {
+            throw new BadRequestException("Unknown product in \"complete the look\"");
+        }
+        jdbc.sql("DELETE FROM product_relations WHERE product_id = :id").param("id", productId).update();
+        for (int i = 0; i < ids.size(); i++) {
+            jdbc.sql("INSERT INTO product_relations (product_id, related_product_id, position) VALUES (:p, :r, :pos)")
+                    .param("p", productId).param("r", ids.get(i)).param("pos", i).update();
+        }
+    }
+
+    private List<RelatedProduct> related(Long productId) {
+        return jdbc.sql("""
+                        SELECT p.id, p.title, p.slug, p.status FROM product_relations r
+                        JOIN products p ON p.id = r.related_product_id
+                        WHERE r.product_id = :id ORDER BY r.position""")
+                .param("id", productId)
+                .query((rs, n) -> new RelatedProduct(rs.getLong(1), rs.getString(2), rs.getString(3),
+                        ProductStatus.valueOf(rs.getString(4))))
+                .list();
+    }
+
     private static List<ProductImage.Data> toImageData(ProductUpsertRequest req) {
         return req.images().stream().map(i -> new ProductImage.Data(i.url().trim(), blankToNull(i.altText()))).toList();
     }
@@ -280,7 +316,7 @@ public class AdminCatalogService {
                 p.getStyleTags() == null ? List.of() : Arrays.asList(p.getStyleTags()),
                 p.getSeoTitle(), p.getSeoDescription(), variants,
                 p.getImages().stream().map(i -> new AdminImage(i.getUrl(), i.getAltText())).toList(),
-                publishProblems(p), p.getCreatedAt(), p.getUpdatedAt());
+                publishProblems(p), related(p.getId()), p.getCreatedAt(), p.getUpdatedAt());
     }
 
     private static boolean isBlank(String s) {

@@ -29,6 +29,24 @@ public class InventoryLevel {
         return true;
     }
 
+    /** Holds stock for an unpaid order; false (and no change) if not enough is available. */
+    public boolean reserve(int quantity) {
+        if (quantity <= 0 || available() < quantity) return false;
+        reserved += quantity;
+        return true;
+    }
+
+    /** Gives back a reservation (unpaid order cancelled or expired). */
+    public void release(int quantity) {
+        reserved = Math.max(0, reserved - quantity);
+    }
+
+    /** A reserved unit was paid for: it leaves the shelf. */
+    public void commitSale(int quantity) {
+        reserved = Math.max(0, reserved - quantity);
+        onHand = Math.max(0, onHand - quantity);
+    }
+
     public void setLowStockThreshold(int lowStockThreshold) {
         this.lowStockThreshold = lowStockThreshold;
     }

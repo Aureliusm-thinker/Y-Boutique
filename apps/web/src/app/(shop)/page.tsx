@@ -1,9 +1,10 @@
 import Link from "next/link";
 import { ProductGrid } from "@/components/ProductCard";
+import { RecentlyViewed } from "@/components/RecentlyViewed";
 import { getProducts } from "@/lib/api";
 
 async function NewArrivals() {
-  const { items } = await getProducts();
+  const { items } = await getProducts({});
   return <ProductGrid products={items.slice(0, 8)} />;
 }
 
@@ -30,6 +31,7 @@ export default function HomePage() {
       <section className="mx-auto max-w-6xl px-4 py-16">
         <h2 className="mb-8 font-serif text-3xl">New arrivals</h2>
         <NewArrivals />
+        <RecentlyViewed />
       </section>
     </>
   );

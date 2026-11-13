@@ -66,6 +66,51 @@ public class InventoryService {
         return new AdjustmentResult(variantId, level.getOnHand(), level.available(), level.isLow());
     }
 
+    // ------------------------------------------------------------------ orders
+
+    /**
+     * Locks the stock rows for these variants (in id order, so concurrent checkouts can't deadlock)
+     * and returns them. Must be called inside the checkout transaction.
+     */
+    public Map<Long, InventoryLevel> lockForCheckout(Collection<Long> variantIds) {
+        Map<Long, InventoryLevel> locked = new java.util.LinkedHashMap<>();
+        variantIds.stream().distinct().sorted().forEach(id ->
+                levels.findForUpdate(id).ifPresent(l -> locked.put(id, l)));
+        return locked;
+    }
+
+    public void releaseReservation(Long variantId, int quantity) {
+        levels.findForUpdate(variantId).ifPresent(l -> l.release(quantity));
+    }
+
+    /** Paid order line: reserved stock leaves the shelf and is logged as SOLD. */
+    public void commitSale(Long variantId, int quantity, Long orderId, String orderNumber) {
+        levels.findForUpdate(variantId).ifPresent(l -> {
+            l.commitSale(quantity);
+            adjustments.save(InventoryAdjustment.forOrder(variantId, -quantity, AdjustmentReason.SOLD,
+                    "Order " + orderNumber, l.getOnHand(), orderId, null));
+        });
+    }
+
+    /** Paid order whose reservation had lapsed: take the stock now if it is still there. */
+    public boolean sellWithoutReservation(Long variantId, int quantity, Long orderId, String orderNumber) {
+        InventoryLevel l = levels.findForUpdate(variantId).orElse(null);
+        if (l == null || !l.reserve(quantity)) return false;
+        l.commitSale(quantity);
+        adjustments.save(InventoryAdjustment.forOrder(variantId, -quantity, AdjustmentReason.SOLD,
+                "Order " + orderNumber, l.getOnHand(), orderId, null));
+        return true;
+    }
+
+    /** Returned/refunded items put back into stock. */
+    public void restock(Long variantId, int quantity, Long orderId, String note, Long staffId) {
+        levels.findForUpdate(variantId).ifPresent(l -> {
+            l.adjust(quantity);
+            adjustments.save(InventoryAdjustment.forOrder(variantId, quantity, AdjustmentReason.RETURNED, note,
+                    l.getOnHand(), orderId, staffId));
+        });
+    }
+
     @Transactional(readOnly = true)
     public List<LowStockRow> lowStock() {
         return levels.findLowStock();

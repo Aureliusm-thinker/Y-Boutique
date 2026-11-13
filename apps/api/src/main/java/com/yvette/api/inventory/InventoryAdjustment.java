@@ -27,6 +27,7 @@ public class InventoryAdjustment {
     private String note;
     private int onHandAfter;
     private Long staffUserId;
+    private Long orderId;
     private Instant createdAt = Instant.now();
 
     protected InventoryAdjustment() {}
@@ -41,6 +42,14 @@ public class InventoryAdjustment {
         this.staffUserId = staffUserId;
     }
 
+    /** A stock movement caused by an order (sale, or a returned item put back on the shelf). */
+    public static InventoryAdjustment forOrder(Long variantId, int delta, AdjustmentReason reason, String note,
+                                               int onHandAfter, Long orderId, Long staffUserId) {
+        InventoryAdjustment a = new InventoryAdjustment(variantId, delta, reason, note, onHandAfter, staffUserId);
+        a.orderId = orderId;
+        return a;
+    }
+
     public Long getId() { return id; }
     public Long getVariantId() { return variantId; }
     public int getDelta() { return delta; }
@@ -48,5 +57,6 @@ public class InventoryAdjustment {
     public String getNote() { return note; }
     public int getOnHandAfter() { return onHandAfter; }
     public Long getStaffUserId() { return staffUserId; }
+    public Long getOrderId() { return orderId; }
     public Instant getCreatedAt() { return createdAt; }
 }

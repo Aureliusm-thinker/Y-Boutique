@@ -10,7 +10,11 @@ export type Staff = {
   role: StaffRole;
   active: boolean;
   lastLoginAt: string | null;
+  mfaEnabled: boolean;
 };
+
+/** The signed-in staff member (GET /api/v1/admin/me). */
+export type Me = Staff & { mfaRequired: boolean };
 
 export type ProductStatus = "DRAFT" | "ACTIVE" | "ARCHIVED";
 
@@ -61,6 +65,7 @@ export type AdminProductDetail = {
   variants: AdminVariant[];
   images: { url: string; altText: string | null }[];
   publishProblems: string[];
+  related: { id: number; title: string; slug: string; status: ProductStatus }[];
   createdAt: string;
   updatedAt: string;
 };

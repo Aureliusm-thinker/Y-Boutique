@@ -8,5 +8,7 @@ public enum AdjustmentReason {
     LOST,
     /** Stock-take correction. */
     CORRECTION,
-    OTHER
+    OTHER,
+    /** Sold through an order (recorded automatically when the order is paid). */
+    SOLD
 }
