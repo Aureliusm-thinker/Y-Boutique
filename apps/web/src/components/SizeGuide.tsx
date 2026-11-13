@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useRef } from "react";
 
 const ROWS = [
@@ -45,6 +46,9 @@ export function SizeGuide() {
             ))}
           </tbody>
         </table>
+        <p className="mt-4 text-sm">
+          <Link href="/pages/size-guide" className="underline">How to measure yourself</Link>
+        </p>
         <form method="dialog" className="mt-6 text-right">
           <button className="bg-stone-900 px-4 py-2 text-sm text-white">Close</button>
         </form>

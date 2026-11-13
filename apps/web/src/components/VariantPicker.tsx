@@ -26,7 +26,7 @@ export function VariantPicker({ variants, productTitle }: { variants: Variant[];
         <p className="text-lg" aria-live="polite">
           {formatPrice(shown.price, shown.currency)}
           {shown.compareAtPrice != null && shown.compareAtPrice > shown.price && (
-            <span className="ml-2 text-stone-400 line-through">{formatPrice(shown.compareAtPrice, shown.currency)}</span>
+            <span className="ml-2 text-stone-500 line-through">{formatPrice(shown.compareAtPrice, shown.currency)}</span>
           )}
         </p>
       )}
@@ -66,7 +66,7 @@ export function VariantPicker({ variants, productTitle }: { variants: Variant[];
               aria-pressed={v.id === selectedId}
               aria-label={`${v.size ?? v.sku}${v.inStock ? "" : " (sold out)"}`}
               onClick={() => setSelectedId(v.id)}
-              className={`min-w-12 border px-3 py-2 text-sm aria-pressed:border-stone-900 aria-pressed:bg-stone-900 aria-pressed:text-white ${v.inStock ? "" : "text-stone-400 line-through"}`}
+              className={`min-w-12 border px-3 py-2 text-sm aria-pressed:border-stone-900 aria-pressed:bg-stone-900 aria-pressed:text-white ${v.inStock ? "" : "text-stone-500 line-through"}`}
             >
               {v.size ?? v.sku}
             </button>

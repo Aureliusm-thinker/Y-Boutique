@@ -29,7 +29,7 @@ export function ProductCard({ product }: { product: ProductSummary }) {
       <p className="mt-1 text-sm text-stone-600">
         {formatPrice(product.priceFrom, product.currency)}
         {onSale && (
-          <span className="ml-2 text-stone-400 line-through">
+          <span className="ml-2 text-stone-500 line-through">
             {formatPrice(product.compareAtPrice, product.currency)}
           </span>
         )}

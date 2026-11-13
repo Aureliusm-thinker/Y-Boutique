@@ -1,6 +1,7 @@
 "use server";
 
-import { refresh, updateTag } from "next/cache";
+import { refresh } from "next/cache";
+import { refreshStorefront } from "@/lib/admin/storefront-cache";
 import { adminFetch, toActionError } from "@/lib/admin/api";
 import type { ActionResult } from "@/lib/admin/types";
 
@@ -18,8 +19,7 @@ export async function saveCategory(_prev: ActionResult | null, formData: FormDat
   } catch (e) {
     return toActionError(e);
   }
-  updateTag("categories"); // storefront navigation
-  updateTag("products");
+  refreshStorefront("categories", "products"); // storefront navigation
   refresh();
   return { ok: true, message: id ? "Saved." : `Category "${name}" added.` };
 }

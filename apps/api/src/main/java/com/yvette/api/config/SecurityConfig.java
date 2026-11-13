@@ -53,7 +53,7 @@ public class SecurityConfig {
                         .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/actuator/health/**", "/actuator/info").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/v1/catalog/**", "/media/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/catalog/**", "/api/v1/content/**", "/media/**").permitAll()
                         // Cart, checkout and a shopper's own order are opened with secret tokens, not logins.
                         .requestMatchers("/api/v1/carts/**", "/api/v1/checkout/**", "/api/v1/orders/**",
                                 "/api/v1/payments/**").permitAll()

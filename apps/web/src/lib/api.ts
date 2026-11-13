@@ -66,3 +66,66 @@ export async function getSitemapEntries(): Promise<SitemapEntry[]> {
   cacheTag("products", "categories");
   return (await getJson<SitemapEntry[]>("/api/v1/catalog/sitemap")) ?? [];
 }
+
+// ---- Reviews and staff-edited content (cached; the back office refreshes the tags on change)
+
+export type ProductReviews = {
+  average: number | null;
+  count: number;
+  fit: { runsSmall: number; trueToSize: number; runsLarge: number };
+  reviews: {
+    id: number;
+    authorName: string;
+    rating: number;
+    title: string | null;
+    body: string | null;
+    fit: string | null;
+    sizeBought: string | null;
+    verifiedBuyer: boolean;
+    createdAt: string;
+  }[];
+};
+
+export async function getReviews(slug: string): Promise<ProductReviews | null> {
+  "use cache";
+  cacheLife("minutes");
+  cacheTag("reviews", `reviews:${slug}`);
+  return getJson<ProductReviews>(`/api/v1/catalog/products/${encodeURIComponent(slug)}/reviews`);
+}
+
+export type ContentPage = { slug: string; title: string; body: string; publishedAt: string | null };
+
+export async function getContentPage(slug: string): Promise<ContentPage | null> {
+  "use cache";
+  cacheLife("hours");
+  cacheTag("content", `page:${slug}`);
+  return getJson<ContentPage>(`/api/v1/content/pages/${encodeURIComponent(slug)}`);
+}
+
+export async function getContentSlugs(): Promise<string[]> {
+  "use cache";
+  cacheLife("hours");
+  cacheTag("content");
+  return (await getJson<string[]>("/api/v1/content/pages")) ?? [];
+}
+
+export type HomeContent = {
+  heroEyebrow?: string;
+  heroTitle?: string;
+  heroText?: string;
+  heroCta?: string;
+  heroLink?: string;
+  heroImage?: string | null;
+  featuredCategory?: string | null;
+  featuredTitle?: string;
+};
+
+export type Announcement = { text?: string; link?: string | null; enabled?: boolean };
+
+export async function getSiteContent(): Promise<{ home: HomeContent; announcement: Announcement }> {
+  "use cache";
+  cacheLife("hours");
+  cacheTag("content");
+  const site = await getJson<{ home?: HomeContent; announcement?: Announcement }>("/api/v1/content/site").catch(() => null);
+  return { home: site?.home ?? {}, announcement: site?.announcement ?? {} };
+}

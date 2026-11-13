@@ -50,11 +50,11 @@ Answers to these will refine scope, cost and timeline.
 | ID | Decision | Options | Recommendation | Status |
 |---|---|---|---|---|
 | D-01 | Build approach | Hosted SaaS · Headless open-source · Fully custom | — | **Decided:** custom Java (Spring Boot) API + Next.js |
-| D-02 | Payment provider | Stripe · Paystack · PayFast · Adyen · other | Depends on Q7/Q8 | Open |
+| D-02 | Payment provider | Stripe · Paystack · PayFast · Adyen · other | Depends on Q7/Q8 | **Built:** M-Pesa (Daraja STK push) + card via Stripe Checkout; swap card provider if preferred (e.g. Paystack, Pesapal) |
 | D-03 | Hosting | Vercel + Railway/Render · AWS · Azure · GCP | Vercel + managed containers + managed Postgres | Open |
 | D-04 | Analytics / feature flags | PostHog · GA4 + LaunchDarkly · other | PostHog (+ GA4 optional) | Open |
 | D-05 | LLM provider for AI features | Claude · others | Claude (tiered models) | Open |
-| D-06 | Search engine | Meilisearch · Typesense · Algolia · Postgres FTS | Meilisearch, then hybrid with pgvector | Open |
+| D-06 | Search engine | Meilisearch · Typesense · Algolia · Postgres FTS | Meilisearch, then hybrid with pgvector | **MVP:** Postgres with pg_trgm (typo-tolerant); revisit at ~5,000 products |
 | D-07 | Project management tool | Linear · Jira · GitHub Projects | GitHub Projects (simple, co-located with code) | Open |
 
 ## 3. Decision Log
@@ -63,3 +63,7 @@ Answers to these will refine scope, cost and timeline.
 |---|---|---|---|---|
 | 2026-11-11 | — | Project initiated; AI/ML to be included as a later phase with data captured from MVP | Owner | Initial brief |
 | 2026-11-11 | D-01 | Backend in **Java** (Spring Boot 4, Java 21); frontend in **Next.js** (TypeScript). AI service stays Python (Phase 3). | Owner | Owner's language preference; scaffold created in `apps/api` and `apps/web` |
+| 2026-11-13 | — | Market is **Kenya**: prices in **KES**, M-Pesa as the local payment method, Kenyan delivery options and counties | Owner | "in kenya shillings please" |
+| 2026-11-13 | D-02 | Payments built for M-Pesa (Safaricom Daraja) and card (Stripe Checkout), each switched on by its keys; test stand-ins in dev | Dev team | Needs the owner's Daraja and Stripe accounts to go live |
+| 2026-11-13 | — | Staff two-step sign-in (authenticator app) required outside dev | Dev team | Sprint 1 E0-3 |
+| 2026-11-13 | — | Returns window 14 days from delivery; Support can refund up to KSh 5,000 per refund (configurable) | Dev team | Defaults — owner to confirm |

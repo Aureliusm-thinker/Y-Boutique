@@ -3,15 +3,11 @@
 // Every action re-checks authorisation by calling the Java API with the caller's own token:
 // the API enforces the role permissions (docs/03 §4), so these can't be bypassed by posting directly.
 
-import { refresh, updateTag } from "next/cache";
+import { refresh } from "next/cache";
+import { refreshStorefront } from "@/lib/admin/storefront-cache";
 import { redirect } from "next/navigation";
 import { adminFetch, toActionError } from "@/lib/admin/api";
 import type { ActionResult, AdjustmentReason, AdminProductDetail, ProductUpsert } from "@/lib/admin/types";
-
-/** Storefront pages cache catalogue data under these tags (src/lib/api.ts). */
-function refreshStorefront() {
-  updateTag("products");
-}
 
 export async function saveProduct(
   id: number | null,
@@ -26,7 +22,7 @@ export async function saveProduct(
   } catch (e) {
     return toActionError(e);
   }
-  refreshStorefront();
+  refreshStorefront("products");
   if (!id) redirect(`/admin/products/${saved.id}?created=1`);
   refresh();
   return { ok: true, message: "Saved.", product: saved };
@@ -38,7 +34,7 @@ export async function changeStatus(id: number, action: "publish" | "unpublish" |
   } catch (e) {
     return toActionError(e);
   }
-  refreshStorefront();
+  refreshStorefront("products");
   refresh();
   const messages = { publish: "Product is live.", unpublish: "Moved back to draft.", archive: "Product archived." };
   return { ok: true, message: messages[action] };
@@ -73,7 +69,7 @@ export async function adjustStock(
   } catch (e) {
     return toActionError(e);
   }
-  refreshStorefront(); // in-stock badges on the shop
+  refreshStorefront("products"); // in-stock badges on the shop
   refresh();
   return { ok: true, message: "Stock updated." };
 }
@@ -88,7 +84,7 @@ export async function setRelatedProducts(id: number, productIds: number[]): Prom
   } catch (e) {
     return toActionError(e);
   }
-  refreshStorefront();
+  refreshStorefront("products");
   refresh();
   return { ok: true, message: "Saved." };
 }

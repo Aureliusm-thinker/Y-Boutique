@@ -38,7 +38,8 @@ export async function adminFetch<T>(path: string, init: RequestInit = {}): Promi
       res.status === 403 ? "You don't have permission to do that." : (problem.detail ?? `Request failed (${res.status})`);
     throw new ApiError(res.status, message, problem.errors ?? []);
   }
-  return (res.status === 204 ? undefined : await res.json()) as T;
+  const text = await res.text(); // 202/204 replies have no body
+  return (text ? JSON.parse(text) : undefined) as T;
 }
 
 export async function getCurrentStaff(): Promise<Me> {
