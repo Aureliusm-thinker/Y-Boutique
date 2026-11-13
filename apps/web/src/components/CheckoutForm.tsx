@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useActionState, useState } from "react";
 import { placeOrder, type CheckoutState } from "@/app/(shop)/cart/actions";
 import { formatPrice } from "@/lib/format";
@@ -226,8 +227,8 @@ export function CheckoutForm({
           {pending ? "Placing order…" : `Pay ${formatPrice(total, cart.currency)}`}
         </button>
         <p className="mt-3 text-center text-xs text-stone-500">
-          By placing your order you agree to our <a href="/pages/terms" className="underline">terms</a> and{" "}
-          <a href="/pages/returns" className="underline">returns policy</a>.
+          By placing your order you agree to our <Link href="/pages/terms" className="underline">terms</Link> and{" "}
+          <Link href="/pages/returns" className="underline">returns policy</Link>.
         </p>
       </aside>
     </form>

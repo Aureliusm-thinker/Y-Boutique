@@ -1,6 +1,7 @@
 "use server";
 
-import { refresh, updateTag } from "next/cache";
+import { refresh } from "next/cache";
+import { refreshStorefront } from "@/lib/admin/storefront-cache";
 import { adminFetch, toActionError } from "@/lib/admin/api";
 import type { ActionResult } from "@/lib/admin/types";
 
@@ -10,7 +11,7 @@ async function run(fn: () => Promise<unknown>, ok: string, restocks = false): Pr
   try {
     const res = (await fn()) as { message?: string } | undefined;
     // Restocking changes what the shop shows as available.
-    if (restocks) updateTag("products");
+    if (restocks) refreshStorefront("products");
     refresh();
     return { ok: true, message: res?.message ?? ok };
   } catch (e) {

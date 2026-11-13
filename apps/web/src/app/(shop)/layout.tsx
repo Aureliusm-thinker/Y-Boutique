@@ -4,7 +4,7 @@ import { SearchBox } from "@/components/SearchBox";
 import { Suspense } from "react";
 import { BagLink } from "@/components/BagLink";
 import { AccountLink } from "@/components/AccountLink";
-import { getCategories } from "@/lib/api";
+import { getCategories, getSiteContent } from "@/lib/api";
 
 async function Header() {
   const categories = await getCategories();
@@ -62,9 +62,27 @@ function Footer() {
   );
 }
 
+/** Site-wide announcement bar, edited under Content in the back office. */
+async function Announcement() {
+  const { announcement } = await getSiteContent();
+  if (!announcement.enabled || !announcement.text) return null;
+  return (
+    <div className="bg-stone-900 px-4 py-2 text-center text-xs tracking-wide text-white print:hidden">
+      {announcement.link ? (
+        <Link href={announcement.link} className="hover:underline">
+          {announcement.text}
+        </Link>
+      ) : (
+        announcement.text
+      )}
+    </div>
+  );
+}
+
 export default function ShopLayout({ children }: LayoutProps<"/">) {
   return (
     <>
+      <Announcement />
       <Header />
       <main className="flex-1">{children}</main>
       <Footer />

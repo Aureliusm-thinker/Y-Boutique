@@ -37,7 +37,7 @@ export function OrderDetails({ order }: { order: Order }) {
           {STEPS.map((s, i) => (
             <li key={s.key} aria-current={i === step ? "step" : undefined}>
               <div className={`h-1 ${i <= step ? "bg-stone-900" : "bg-stone-200"}`} />
-              <p className={`mt-2 ${i <= step ? "text-stone-900" : "text-stone-400"}`}>{s.label}</p>
+              <p className={`mt-2 ${i <= step ? "text-stone-900" : "text-stone-500"}`}>{s.label}</p>
             </li>
           ))}
         </ol>

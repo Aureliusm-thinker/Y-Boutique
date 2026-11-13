@@ -32,7 +32,7 @@ async function CartContent() {
       <ul className="divide-y divide-stone-200 border-y border-stone-200">
         {cart.lines.map((line) => (
           <li key={line.variantId} className="flex gap-4 py-5">
-            <Link href={`/products/${line.productSlug}`} className="relative h-32 w-24 shrink-0 bg-stone-100">
+            <Link href={`/products/${line.productSlug}`} aria-label={line.title} className="relative h-32 w-24 shrink-0 bg-stone-100">
               {line.imageUrl && <Image src={line.imageUrl} alt="" fill sizes="96px" className="object-cover" />}
             </Link>
             <div className="flex flex-1 flex-col">

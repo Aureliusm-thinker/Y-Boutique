@@ -1,38 +1,45 @@
 import Link from "next/link";
+import { Hero } from "@/components/Hero";
 import { ProductGrid } from "@/components/ProductCard";
 import { RecentlyViewed } from "@/components/RecentlyViewed";
-import { getProducts } from "@/lib/api";
+import { getCategories, getProducts, getSiteContent, type HomeContent } from "@/lib/api";
 
-async function NewArrivals() {
-  const { items } = await getProducts({});
+async function Featured({ home }: { home: HomeContent }) {
+  const { items } = await getProducts(home.featuredCategory ? { category: home.featuredCategory } : {});
   return <ProductGrid products={items.slice(0, 8)} />;
 }
 
-export default function HomePage() {
+async function Categories() {
+  const categories = await getCategories();
+  if (categories.length === 0) return null;
+  return (
+    <section className="mx-auto max-w-6xl px-4 pb-4">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+        {categories.slice(0, 6).map((c) => (
+          <Link
+            key={c.id}
+            href={`/shop?category=${c.slug}`}
+            className="border border-stone-300 py-6 text-center font-serif text-xl hover:border-stone-900"
+          >
+            {c.name}
+          </Link>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+export default async function HomePage() {
+  const { home } = await getSiteContent();
   return (
     <>
-      {/* Hero — will become admin-editable in Sprint 5 (content module) */}
-      <section className="bg-stone-200/60">
-        <div className="mx-auto max-w-6xl px-4 py-24 text-center sm:py-32">
-          <p className="text-xs uppercase tracking-[0.3em] text-stone-600">New season</p>
-          <h1 className="mt-4 font-serif text-5xl leading-tight sm:text-7xl">Curated for you.</h1>
-          <p className="mx-auto mt-4 max-w-md text-stone-600">
-            Considered pieces in natural fabrics, chosen to be worn and loved for years.
-          </p>
-          <Link
-            href="/shop"
-            className="mt-8 inline-block bg-stone-900 px-8 py-3 text-sm uppercase tracking-widest text-white hover:bg-stone-700"
-          >
-            Shop the collection
-          </Link>
-        </div>
-      </section>
-
+      <Hero home={home} />
       <section className="mx-auto max-w-6xl px-4 py-16">
-        <h2 className="mb-8 font-serif text-3xl">New arrivals</h2>
-        <NewArrivals />
+        <h2 className="mb-8 font-serif text-3xl">{home.featuredTitle ?? "New arrivals"}</h2>
+        <Featured home={home} />
         <RecentlyViewed />
       </section>
+      <Categories />
     </>
   );
 }

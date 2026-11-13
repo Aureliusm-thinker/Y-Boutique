@@ -9,7 +9,8 @@ import { SizeGuide } from "@/components/SizeGuide";
 import { TrackView } from "@/components/TrackView";
 import { VariantPicker } from "@/components/VariantPicker";
 import { WishlistButton } from "@/components/WishlistButton";
-import { getProduct } from "@/lib/api";
+import { getProduct, getReviews, type ProductReviews } from "@/lib/api";
+import { ProductReviewList, Stars } from "@/components/ProductReviews";
 import type { ProductDetail } from "@/lib/types";
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
@@ -33,7 +34,7 @@ export async function generateMetadata({ params }: PageProps<"/products/[slug]">
 }
 
 /** schema.org Product data so search engines can show price and availability. */
-function ProductJsonLd({ product }: { product: ProductDetail }) {
+function ProductJsonLd({ product, reviews }: { product: ProductDetail; reviews: ProductReviews | null }) {
   const data = {
     "@context": "https://schema.org",
     "@type": "Product",
@@ -44,6 +45,10 @@ function ProductJsonLd({ product }: { product: ProductDetail }) {
     material: product.material ?? undefined,
     category: product.category?.name,
     brand: { "@type": "Brand", name: "Yvette" },
+    aggregateRating:
+      reviews && reviews.count > 0
+        ? { "@type": "AggregateRating", ratingValue: reviews.average, reviewCount: reviews.count }
+        : undefined,
     offers: product.variants.map((v) => ({
       "@type": "Offer",
       sku: v.sku,
@@ -64,7 +69,7 @@ function ProductJsonLd({ product }: { product: ProductDetail }) {
 
 async function ProductContent({ params }: Pick<PageProps<"/products/[slug]">, "params">) {
   const { slug } = await params;
-  const product = await getProduct(slug);
+  const [product, reviews] = await Promise.all([getProduct(slug), getReviews(slug).catch(() => null)]);
   if (!product) notFound();
 
   const details = [
@@ -77,7 +82,7 @@ async function ProductContent({ params }: Pick<PageProps<"/products/[slug]">, "p
 
   return (
     <>
-      <ProductJsonLd product={product} />
+      <ProductJsonLd product={product} reviews={reviews} />
       <TrackView name="product_view" properties={{ productId: product.id, slug: product.slug }} />
       <RememberView
         item={{
@@ -111,6 +116,11 @@ async function ProductContent({ params }: Pick<PageProps<"/products/[slug]">, "p
             <p className="text-xs uppercase tracking-[0.2em] text-stone-500">{product.category.name}</p>
           )}
           <h1 className="mt-2 font-serif text-4xl">{product.title}</h1>
+          {reviews && reviews.count > 0 && (
+            <a href="#reviews-heading" className="mt-2 flex items-center gap-2 text-sm text-stone-600 hover:underline">
+              <Stars rating={reviews.average ?? 0} /> {reviews.average?.toFixed(1)} ({reviews.count})
+            </a>
+          )}
           <div className="mt-4">
             <VariantPicker variants={product.variants} productTitle={product.title} />
           </div>
@@ -139,6 +149,8 @@ async function ProductContent({ params }: Pick<PageProps<"/products/[slug]">, "p
           <ProductGrid products={product.completeTheLook} />
         </section>
       )}
+
+      {reviews && <ProductReviewList data={reviews} />}
 
       <RecentlyViewed excludeSlug={product.slug} />
     </>

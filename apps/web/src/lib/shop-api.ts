@@ -41,7 +41,9 @@ async function handle<T>(res: Response): Promise<T> {
     const problem = await res.json().catch(() => ({}));
     throw new ShopApiError(res.status, problem.detail ?? `Request failed (${res.status})`, problem.errors ?? []);
   }
-  return (res.status === 204 ? undefined : await res.json()) as T;
+  // 202/204 replies (e.g. "we'll email you") have no body.
+  const text = await res.text();
+  return (text ? JSON.parse(text) : undefined) as T;
 }
 
 export async function getCartToken(): Promise<string | undefined> {
