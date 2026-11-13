@@ -54,7 +54,11 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/actuator/health/**", "/actuator/info").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/catalog/**", "/media/**").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/v1/events", "/api/v1/auth/staff/login").permitAll()
+                        // Cart, checkout and a shopper's own order are opened with secret tokens, not logins.
+                        .requestMatchers("/api/v1/carts/**", "/api/v1/checkout/**", "/api/v1/orders/**",
+                                "/api/v1/payments/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/v1/events", "/api/v1/auth/staff/login",
+                                "/api/v1/auth/staff/login/mfa").permitAll()
                         .requestMatchers("/api/v1/admin/**").hasAnyRole(
                                 "OWNER", "MANAGER", "INVENTORY", "FULFILMENT", "SUPPORT", "MARKETING")
                         .anyRequest().authenticated());

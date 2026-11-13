@@ -14,6 +14,11 @@ spring:
         default_batch_fetch_size: 50
   flyway:
     locations: classpath:db/migration
+  mail:
+    host: ${SMTP_HOST:localhost}
+    port: ${SMTP_PORT:11025}
+    username: ${SMTP_USERNAME:}
+    password: ${SMTP_PASSWORD:}
   servlet:
     multipart:
       max-file-size: 10MB
@@ -31,14 +36,42 @@ management:
         include: health,info
 
 yvette:
+  # Public address of the shop (links in emails, payment return pages).
+  site-url: ${SITE_URL:http://localhost:3000}
   store:
-    currency: ${STORE_CURRENCY:USD}
+    currency: ${STORE_CURRENCY:KES}
+    name: Yvette
+  mail:
+    from: ${MAIL_FROM:Yvette <orders@yvette.local>}
+    # Where staff notifications (new orders, returns) go.
+    staff-notifications-to: ${STAFF_NOTIFICATIONS_TO:}
+  checkout:
+    # Unpaid orders hold their stock this long, then are cancelled.
+    payment-window: ${PAYMENT_WINDOW:PT30M}
+  payments:
+    # Fake card + M-Pesa providers for local testing. Never enable in production.
+    test-mode: ${PAYMENTS_TEST_MODE:false}
+    mpesa:
+      base-url: ${MPESA_BASE_URL:https://sandbox.safaricom.co.ke}
+      consumer-key: ${MPESA_CONSUMER_KEY:}
+      consumer-secret: ${MPESA_CONSUMER_SECRET:}
+      shortcode: ${MPESA_SHORTCODE:}
+      passkey: ${MPESA_PASSKEY:}
+      transaction-type: ${MPESA_TRANSACTION_TYPE:CustomerPayBillOnline}
+      # Must end with /api/v1/payments/mpesa/callback/<callback-secret>
+      callback-url: ${MPESA_CALLBACK_URL:}
+      callback-secret: ${MPESA_CALLBACK_SECRET:}
+    stripe:
+      secret-key: ${STRIPE_SECRET_KEY:}
+      webhook-secret: ${STRIPE_WEBHOOK_SECRET:}
   cors:
     allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000}
   security:
     # Required outside dev: at least 32 random characters. Startup fails if missing.
     jwt-secret: ${JWT_SECRET:}
     token-ttl: ${STAFF_TOKEN_TTL:PT8H}
+    # Staff must set up two-step sign-in (authenticator app) before using the back office.
+    mfa-required: ${STAFF_MFA_REQUIRED:true}
   bootstrap:
     # Creates the first Owner account if the store has no staff yet. Remove after first start.
     owner-email: ${YVETTE_BOOTSTRAP_OWNER_EMAIL:}
@@ -62,6 +95,12 @@ spring:
 yvette:
   security:
     jwt-secret: ${JWT_SECRET:dev-only-secret-change-me-0123456789abcdef}
+    # Optional locally so the dev login stays quick; staff can still turn it on under "Security".
+    mfa-required: ${STAFF_MFA_REQUIRED:false}
+  payments:
+    test-mode: ${PAYMENTS_TEST_MODE:true}
+  mail:
+    staff-notifications-to: ${STAFF_NOTIFICATIONS_TO:team@yvette.local}
   bootstrap:
     owner-email: ${YVETTE_BOOTSTRAP_OWNER_EMAIL:owner@yvette.local}
     owner-password: ${YVETTE_BOOTSTRAP_OWNER_PASSWORD:yvette-dev-owner}

@@ -17,6 +17,8 @@ public class TokenService {
 
     public static final String ISSUER = "yvette-api";
     public static final String ROLES_CLAIM = "roles";
+    /** True when the session was opened with an authenticator code (two-step sign-in). */
+    public static final String MFA_CLAIM = "mfa";
 
     private final JwtEncoder encoder;
     private final Duration ttl;
@@ -39,6 +41,7 @@ public class TokenService {
                 .claim("email", staff.getEmail())
                 .claim("name", staff.getFullName())
                 .claim(ROLES_CLAIM, List.of(staff.getRole().name()))
+                .claim(MFA_CLAIM, staff.isMfaEnabled())
                 .build();
         JwsHeader header = JwsHeader.with(MacAlgorithm.HS256).build();
         String token = encoder.encode(JwtEncoderParameters.from(header, claims)).getTokenValue();

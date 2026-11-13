@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { ProductForm } from "@/components/admin/ProductForm";
+import { RelatedProducts } from "@/components/admin/RelatedProducts";
 import { StatusPanel } from "@/components/admin/StatusPanel";
 import { StockAdjuster } from "@/components/admin/StockAdjuster";
 import { Loading } from "@/components/admin/ui";
@@ -38,6 +39,7 @@ async function EditProduct({ params, searchParams }: PageProps<"/admin/products/
         <ProductForm product={product} categories={categories} readOnly={!canEdit} />
         <aside className="space-y-6 lg:sticky lg:top-6 lg:self-start">
           <StatusPanel product={product} canEdit={canEdit} />
+          <RelatedProducts productId={product.id} initial={product.related} canEdit={canEdit} />
           <section className="admin-card">
             <h2 className="mb-3 font-medium">Stock</h2>
             {canEdit ? (

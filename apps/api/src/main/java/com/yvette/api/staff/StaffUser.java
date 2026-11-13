@@ -29,6 +29,10 @@ public class StaffUser {
     private Instant createdAt = Instant.now();
     private Instant lastLoginAt;
 
+    private String mfaSecret;
+    private boolean mfaEnabled;
+    private long mfaLastStep;
+
     protected StaffUser() {}
 
     public StaffUser(String email, String passwordHash, String fullName, StaffRole role) {
@@ -48,6 +52,30 @@ public class StaffUser {
     public void changeFullName(String fullName) { this.fullName = fullName.trim(); }
     public void changePasswordHash(String passwordHash) { this.passwordHash = passwordHash; }
 
+    /** Stores a new, not-yet-confirmed authenticator secret (replaces any pending one). */
+    public void startMfaSetup(String secret) {
+        if (mfaEnabled) throw new IllegalStateException("Two-step sign-in is already on");
+        this.mfaSecret = secret;
+    }
+
+    public void enableMfa(long acceptedStep) {
+        this.mfaEnabled = true;
+        this.mfaLastStep = acceptedStep;
+    }
+
+    public void disableMfa() {
+        this.mfaEnabled = false;
+        this.mfaSecret = null;
+        this.mfaLastStep = 0;
+    }
+
+    /** Accepts a code's time step only once, so an intercepted code can't be reused. */
+    public boolean acceptMfaStep(long step) {
+        if (step <= mfaLastStep) return false;
+        this.mfaLastStep = step;
+        return true;
+    }
+
     public Long getId() { return id; }
     public String getEmail() { return email; }
     public String getPasswordHash() { return passwordHash; }
@@ -56,4 +84,6 @@ public class StaffUser {
     public boolean isActive() { return active; }
     public Instant getCreatedAt() { return createdAt; }
     public Instant getLastLoginAt() { return lastLoginAt; }
+    public String getMfaSecret() { return mfaSecret; }
+    public boolean isMfaEnabled() { return mfaEnabled; }
 }

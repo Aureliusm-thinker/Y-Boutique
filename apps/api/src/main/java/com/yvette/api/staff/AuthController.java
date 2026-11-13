@@ -2,6 +2,7 @@ package com.yvette.api.staff;
 
 import com.yvette.api.staff.StaffDtos.LoginRequest;
 import com.yvette.api.staff.StaffDtos.LoginResponse;
+import com.yvette.api.staff.StaffDtos.MfaLoginRequest;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
@@ -26,6 +27,11 @@ public class AuthController {
     @PostMapping("/login")
     public LoginResponse login(@Valid @RequestBody LoginRequest request) {
         return staff.login(request.email(), request.password());
+    }
+
+    @PostMapping("/login/mfa")
+    public LoginResponse loginWithCode(@Valid @RequestBody MfaLoginRequest request) {
+        return staff.loginWithCode(request.mfaTicket(), request.code());
     }
 
     @ExceptionHandler(BadCredentialsException.class)

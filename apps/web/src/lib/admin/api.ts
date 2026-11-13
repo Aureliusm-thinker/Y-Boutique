@@ -1,7 +1,7 @@
 import "server-only";
 import { redirect } from "next/navigation";
 import { getToken } from "./session";
-import type { ActionResult, Staff } from "./types";
+import type { ActionResult, Me } from "./types";
 
 const API_URL = process.env.API_URL ?? "http://localhost:8080";
 
@@ -32,6 +32,8 @@ export async function adminFetch<T>(path: string, init: RequestInit = {}): Promi
   if (res.status === 401) redirect("/admin/login");
   if (!res.ok) {
     const problem = await res.json().catch(() => ({}));
+    // The store requires two-step sign-in and this person hasn't set it up yet.
+    if (res.status === 403 && problem.code === "mfa_setup_required") redirect("/admin/security");
     const message =
       res.status === 403 ? "You don't have permission to do that." : (problem.detail ?? `Request failed (${res.status})`);
     throw new ApiError(res.status, message, problem.errors ?? []);
@@ -39,8 +41,8 @@ export async function adminFetch<T>(path: string, init: RequestInit = {}): Promi
   return (res.status === 204 ? undefined : await res.json()) as T;
 }
 
-export async function getCurrentStaff(): Promise<Staff> {
-  return adminFetch<Staff>("/api/v1/admin/me");
+export async function getCurrentStaff(): Promise<Me> {
+  return adminFetch<Me>("/api/v1/admin/me");
 }
 
 /** Turns an API error into a form-friendly result; rethrows anything else (incl. redirects). */

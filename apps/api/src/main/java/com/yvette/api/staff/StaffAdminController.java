@@ -2,6 +2,10 @@ package com.yvette.api.staff;
 
 import com.yvette.api.common.CurrentStaff;
 import com.yvette.api.staff.StaffDtos.CreateStaffRequest;
+import com.yvette.api.staff.StaffDtos.LoginResponse;
+import com.yvette.api.staff.StaffDtos.MeDto;
+import com.yvette.api.staff.StaffDtos.MfaCodeRequest;
+import com.yvette.api.staff.StaffDtos.MfaSetupResponse;
 import com.yvette.api.staff.StaffDtos.StaffDto;
 import com.yvette.api.staff.StaffDtos.UpdateStaffRequest;
 import jakarta.validation.Valid;
@@ -31,8 +35,32 @@ public class StaffAdminController {
 
     @GetMapping("/me")
     @PreAuthorize(Roles.ANY_STAFF)
-    public StaffDto me(@AuthenticationPrincipal Jwt jwt) {
-        return staff.get(CurrentStaff.id(jwt));
+    public MeDto me(@AuthenticationPrincipal Jwt jwt) {
+        return staff.me(CurrentStaff.id(jwt));
+    }
+
+    @PostMapping("/me/mfa/setup")
+    @PreAuthorize(Roles.ANY_STAFF)
+    public MfaSetupResponse startMfaSetup(@AuthenticationPrincipal Jwt jwt) {
+        return staff.startMfaSetup(CurrentStaff.id(jwt));
+    }
+
+    @PostMapping("/me/mfa/enable")
+    @PreAuthorize(Roles.ANY_STAFF)
+    public LoginResponse enableMfa(@AuthenticationPrincipal Jwt jwt, @Valid @RequestBody MfaCodeRequest request) {
+        return staff.enableMfa(CurrentStaff.id(jwt), request.code());
+    }
+
+    @PostMapping("/me/mfa/disable")
+    @PreAuthorize(Roles.ANY_STAFF)
+    public StaffDto disableMfa(@AuthenticationPrincipal Jwt jwt, @Valid @RequestBody MfaCodeRequest request) {
+        return staff.disableOwnMfa(CurrentStaff.id(jwt), request.code());
+    }
+
+    @PostMapping("/staff/{id}/mfa/reset")
+    @PreAuthorize(Roles.OWNER_ONLY)
+    public StaffDto resetMfa(@PathVariable Long id) {
+        return staff.resetMfa(id);
     }
 
     @GetMapping("/staff")

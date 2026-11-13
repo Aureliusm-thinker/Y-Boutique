@@ -14,6 +14,7 @@ async function Nav() {
     { href: "/admin/categories", label: "Categories", show: can.viewCatalog(me.role) },
     { href: "/admin/inventory", label: "Inventory", show: can.viewCatalog(me.role) },
     { href: "/admin/staff", label: "Staff", show: can.manageStaff(me.role) },
+    { href: "/admin/security", label: "Security", show: true },
   ];
   return (
     <>

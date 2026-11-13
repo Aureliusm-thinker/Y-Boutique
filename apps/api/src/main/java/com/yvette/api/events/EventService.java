@@ -27,6 +27,27 @@ public class EventService {
     }
 
     /**
+     * Records a fact the server knows for sure (purchase, return_requested, review_submitted), which the
+     * browser is not allowed to send. Never throws: analytics must not break a checkout.
+     */
+    public void recordServerEvent(String name, String anonymousId, Long userId, Map<String, Object> properties) {
+        try {
+            jdbc.sql("""
+                    INSERT INTO events (event_id, name, anonymous_id, user_id, properties, occurred_at)
+                    VALUES (:eventId, :name, :anonymousId, :userId, CAST(:properties AS jsonb), now())
+                    """)
+                    .param("eventId", java.util.UUID.randomUUID())
+                    .param("name", name)
+                    .param("anonymousId", anonymousId)
+                    .param("userId", userId)
+                    .param("properties", json.writeValueAsString(properties))
+                    .update();
+        } catch (RuntimeException e) {
+            org.slf4j.LoggerFactory.getLogger(EventService.class).warn("Could not record {} event: {}", name, e.getMessage());
+        }
+    }
+
+    /**
      * Stores the event. Duplicate event ids are ignored so client retries are safe.
      * Server-side facts (purchase, return_requested, review_submitted) are recorded by their
      * own modules, not accepted from the browser.

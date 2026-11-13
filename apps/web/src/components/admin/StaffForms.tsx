@@ -3,6 +3,7 @@
 import { useActionState } from "react";
 import { createStaff, updateStaff } from "@/app/admin/(panel)/staff/actions";
 import { STAFF_ROLES, type ActionResult, type Staff } from "@/lib/admin/types";
+import { ResetMfaButton } from "./MfaForms";
 import { ActionMessage } from "./ui";
 
 const roleLabel = (r: string) => r.charAt(0) + r.slice(1).toLowerCase();
@@ -54,6 +55,8 @@ export function StaffRow({ staff, isMe }: { staff: Staff; isMe: boolean }) {
         </p>
         <p className="text-xs text-stone-500">
           {staff.lastLoginAt ? `Last sign-in ${new Date(staff.lastLoginAt).toLocaleString()}` : "Never signed in"}
+          {" · "}
+          {staff.mfaEnabled ? "2-step on" : "2-step off"}
         </p>
       </div>
       <label className="text-sm">
@@ -79,6 +82,7 @@ export function StaffRow({ staff, isMe }: { staff: Staff; isMe: boolean }) {
       <button disabled={pending} className="admin-btn">
         Save
       </button>
+      {staff.mfaEnabled && !isMe && <ResetMfaButton staffId={staff.id} />}
       <div className="basis-full">
         <ActionMessage result={result} />
       </div>

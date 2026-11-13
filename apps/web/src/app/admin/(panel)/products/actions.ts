@@ -77,3 +77,27 @@ export async function adjustStock(
   refresh();
   return { ok: true, message: "Stock updated." };
 }
+
+/** Sets the curated "complete the look" products for a product page. */
+export async function setRelatedProducts(id: number, productIds: number[]): Promise<ActionResult> {
+  try {
+    await adminFetch(`/api/v1/admin/products/${id}/related`, {
+      method: "PUT",
+      body: JSON.stringify({ productIds }),
+    });
+  } catch (e) {
+    return toActionError(e);
+  }
+  refreshStorefront();
+  refresh();
+  return { ok: true, message: "Saved." };
+}
+
+/** Product search for pickers in the back office. */
+export async function findProducts(q: string): Promise<{ id: number; title: string; status: string }[]> {
+  const qs = new URLSearchParams({ q, size: "8" });
+  const page = await adminFetch<{ items: { id: number; title: string; status: string }[] }>(
+    `/api/v1/admin/products?${qs}`,
+  );
+  return page.items.map(({ id, title, status }) => ({ id, title, status }));
+}

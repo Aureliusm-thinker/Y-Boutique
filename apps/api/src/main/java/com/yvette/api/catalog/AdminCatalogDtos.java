@@ -35,7 +35,9 @@ public final class AdminCatalogDtos {
             @Size(max = 200) String seoTitle,
             @Size(max = 320) String seoDescription,
             @NotNull @Size(max = 50) List<@Valid VariantUpsert> variants,
-            @NotNull @Size(max = 20) List<@Valid ImageUpsert> images) {}
+            @NotNull @Size(max = 20) List<@Valid ImageUpsert> images,
+            /** Curated "complete the look" products, in order. Null leaves them unchanged. */
+            @Size(max = 8) List<@NotNull Long> relatedProductIds) {}
 
     public record VariantUpsert(
             Long id,
@@ -78,7 +80,12 @@ public final class AdminCatalogDtos {
             String seoTitle, String seoDescription, List<AdminVariant> variants, List<AdminImage> images,
             /** What still needs filling in before the product can be published. Empty = ready. */
             List<String> publishProblems,
+            List<RelatedProduct> related,
             Instant createdAt, Instant updatedAt) {}
+
+    public record RelatedUpdate(@NotNull @Size(max = 8) List<@NotNull Long> productIds) {}
+
+    public record RelatedProduct(Long id, String title, String slug, ProductStatus status) {}
 
     public record AdminCategory(Long id, String name, String slug, int position, long productCount) {}
 }

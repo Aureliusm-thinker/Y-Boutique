@@ -86,6 +86,14 @@ public class AdminCatalogController {
         return catalog.changeStatus(id, ProductStatus.ARCHIVED);
     }
 
+    /** Sets the curated "complete the look" products shown on this product's page. */
+    @PutMapping("/products/{id}/related")
+    @PreAuthorize(Roles.CATALOG_WRITE)
+    public AdminProductDetail setRelated(@PathVariable Long id,
+                                         @Valid @RequestBody AdminCatalogDtos.RelatedUpdate request) {
+        return catalog.updateRelated(id, request.productIds());
+    }
+
     @GetMapping("/categories")
     @PreAuthorize(Roles.CATALOG_READ)
     public List<AdminCategory> categories() {
