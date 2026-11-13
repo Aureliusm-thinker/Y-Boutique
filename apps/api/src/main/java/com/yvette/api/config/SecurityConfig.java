@@ -59,6 +59,9 @@ public class SecurityConfig {
                                 "/api/v1/payments/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/events", "/api/v1/auth/staff/login",
                                 "/api/v1/auth/staff/login/mfa").permitAll()
+                        .requestMatchers("/api/v1/auth/customer/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/v1/catalog/stock-alerts").permitAll()
+                        .requestMatchers("/api/v1/account/**").hasRole("CUSTOMER")
                         .requestMatchers("/api/v1/admin/**").hasAnyRole(
                                 "OWNER", "MANAGER", "INVENTORY", "FULFILMENT", "SUPPORT", "MARKETING")
                         .anyRequest().authenticated());

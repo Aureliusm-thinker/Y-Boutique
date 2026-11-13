@@ -4,6 +4,7 @@ import { useState } from "react";
 import { formatPrice } from "@/lib/format";
 import type { Variant } from "@/lib/types";
 import { AddToBag } from "./AddToBag";
+import { NotifyWhenBack } from "./NotifyWhenBack";
 
 const unique = (values: (string | null)[]) => [...new Set(values.filter((v): v is string => Boolean(v)))];
 
@@ -62,11 +63,10 @@ export function VariantPicker({ variants, productTitle }: { variants: Variant[];
             <button
               key={v.id}
               type="button"
-              disabled={!v.inStock}
               aria-pressed={v.id === selectedId}
               aria-label={`${v.size ?? v.sku}${v.inStock ? "" : " (sold out)"}`}
               onClick={() => setSelectedId(v.id)}
-              className="min-w-12 border px-3 py-2 text-sm aria-pressed:border-stone-900 aria-pressed:bg-stone-900 aria-pressed:text-white disabled:cursor-not-allowed disabled:text-stone-300 disabled:line-through"
+              className={`min-w-12 border px-3 py-2 text-sm aria-pressed:border-stone-900 aria-pressed:bg-stone-900 aria-pressed:text-white ${v.inStock ? "" : "text-stone-400 line-through"}`}
             >
               {v.size ?? v.sku}
             </button>
@@ -78,11 +78,15 @@ export function VariantPicker({ variants, productTitle }: { variants: Variant[];
         {selected?.stockLeft ? `Only ${selected.stockLeft} left` : ""}
       </p>
 
-      <AddToBag
-        variantId={selected?.id ?? null}
-        label={allSoldOut ? "Sold out" : selected ? "Add to bag" : "Choose a size"}
-        productTitle={productTitle}
-      />
+      {selected && !selected.inStock ? (
+        <NotifyWhenBack key={selected.id} variantId={selected.id} label={`Size ${selected.size ?? selected.sku}`} />
+      ) : (
+        <AddToBag
+          variantId={selected?.id ?? null}
+          label={allSoldOut ? "Sold out" : selected ? "Add to bag" : "Choose a size"}
+          productTitle={productTitle}
+        />
+      )}
     </div>
   );
 }

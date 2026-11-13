@@ -116,9 +116,76 @@ export type ProductUpsert = {
 /** Common result shape for admin server actions. */
 export type ActionResult = { ok: boolean; message?: string; errors?: string[] };
 
+const any = (...roles: StaffRole[]) => (r: StaffRole) => roles.includes(r);
+
 /** Which roles may do what — mirrors apps/api .../staff/Roles.java (the API is the real gate). */
 export const can = {
-  editCatalog: (r: StaffRole) => r === "OWNER" || r === "MANAGER" || r === "INVENTORY",
-  viewCatalog: (r: StaffRole) => r === "OWNER" || r === "MANAGER" || r === "INVENTORY" || r === "MARKETING",
-  manageStaff: (r: StaffRole) => r === "OWNER",
+  editCatalog: any("OWNER", "MANAGER", "INVENTORY"),
+  viewCatalog: any("OWNER", "MANAGER", "INVENTORY", "MARKETING"),
+  manageStaff: any("OWNER"),
+  viewOrders: any("OWNER", "MANAGER", "INVENTORY", "FULFILMENT", "SUPPORT"),
+  fulfilOrders: any("OWNER", "MANAGER", "FULFILMENT"),
+  noteOrders: any("OWNER", "MANAGER", "FULFILMENT", "SUPPORT"),
+  refund: any("OWNER", "MANAGER", "SUPPORT"),
+  viewCustomers: any("OWNER", "MANAGER", "SUPPORT"),
+  approveReturns: any("OWNER", "MANAGER", "SUPPORT"),
+  receiveReturns: any("OWNER", "MANAGER", "SUPPORT", "FULFILMENT"),
+  moderateReviews: any("OWNER", "MANAGER", "SUPPORT", "MARKETING"),
+  marketing: any("OWNER", "MANAGER", "MARKETING"),
+  reports: any("OWNER", "MANAGER", "MARKETING"),
+};
+
+// ---- Orders & customers (apps/api .../order/AdminOrderDtos.java, customer/AdminCustomerController.java)
+
+export type AdminOrderRow = {
+  id: number;
+  number: string;
+  status: string;
+  paymentStatus: string;
+  paymentMethod: string;
+  customerName: string;
+  email: string;
+  itemCount: number;
+  total: number;
+  currency: string;
+  shippingMethod: string;
+  placedAt: string;
+};
+
+export type AdminOrderDetail = {
+  id: number;
+  customerId: number | null;
+  order: import("@/lib/types").Order;
+  events: { type: string; message: string; customerVisible: boolean; staffName: string | null; at: string }[];
+  payments: {
+    provider: string;
+    method: string;
+    kind: string;
+    status: string;
+    amount: number;
+    reference: string | null;
+    failureMessage: string | null;
+    at: string;
+  }[];
+  refundable: number;
+  deliveryNotes: string | null;
+};
+
+export type AdminCustomerRow = {
+  id: number;
+  email: string;
+  fullName: string;
+  phone: string | null;
+  emailVerified: boolean;
+  orderCount: number;
+  totalSpent: number;
+  createdAt: string;
+};
+
+export type AdminCustomerDetail = {
+  profile: import("@/lib/account").CustomerProfile;
+  orders: { number: string; status: string; paymentStatus: string; total: number; currency: string; itemCount: number; placedAt: string }[];
+  notes: { note: string; staffName: string | null; at: string }[];
+  totalSpent: number;
+  lastLoginAt: string | null;
 };

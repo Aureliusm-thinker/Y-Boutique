@@ -10,9 +10,15 @@ async function Nav() {
   const me = await getCurrentStaff();
   const links = [
     { href: "/admin", label: "Dashboard", show: true },
+    { href: "/admin/orders", label: "Orders", show: can.viewOrders(me.role) },
+    { href: "/admin/returns", label: "Returns", show: can.receiveReturns(me.role) },
+    { href: "/admin/customers", label: "Customers", show: can.viewCustomers(me.role) },
     { href: "/admin/products", label: "Products", show: can.viewCatalog(me.role) },
     { href: "/admin/categories", label: "Categories", show: can.viewCatalog(me.role) },
     { href: "/admin/inventory", label: "Inventory", show: can.viewCatalog(me.role) },
+    { href: "/admin/reviews", label: "Reviews", show: can.moderateReviews(me.role) },
+    { href: "/admin/promotions", label: "Discounts", show: can.marketing(me.role) },
+    { href: "/admin/content", label: "Content", show: can.marketing(me.role) },
     { href: "/admin/staff", label: "Staff", show: can.manageStaff(me.role) },
     { href: "/admin/security", label: "Security", show: true },
   ];

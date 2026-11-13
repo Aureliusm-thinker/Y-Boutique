@@ -1,5 +1,6 @@
 import "server-only";
 import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 import { CUSTOMER_COOKIE, shopFetch, ShopApiError } from "./shop-api";
 
 // Mirrors apps/api .../customer/CustomerDtos.java
@@ -54,4 +55,11 @@ export async function setCustomerToken(token: string, expiresAt: string) {
 
 export async function clearCustomerToken() {
   (await cookies()).delete({ name: CUSTOMER_COOKIE, path: "/" });
+}
+
+/** The signed-in customer, or a redirect to sign in (then back to `next`). */
+export async function requireCustomer(next: string): Promise<CustomerProfile> {
+  const profile = await getCustomerProfile();
+  if (!profile) redirect(`/account/login?next=${encodeURIComponent(next)}`);
+  return profile;
 }

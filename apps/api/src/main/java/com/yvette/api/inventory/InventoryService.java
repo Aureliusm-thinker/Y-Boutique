@@ -20,10 +20,20 @@ public class InventoryService {
 
     private final InventoryLevelRepository levels;
     private final InventoryAdjustmentRepository adjustments;
+    private final org.springframework.context.ApplicationEventPublisher events;
 
-    public InventoryService(InventoryLevelRepository levels, InventoryAdjustmentRepository adjustments) {
+    public InventoryService(InventoryLevelRepository levels, InventoryAdjustmentRepository adjustments,
+                            org.springframework.context.ApplicationEventPublisher events) {
         this.levels = levels;
         this.adjustments = adjustments;
+        this.events = events;
+    }
+
+    /** A sold-out variant can be bought again (published after the change commits → back-in-stock emails). */
+    public record VariantRestocked(Long variantId) {}
+
+    private void announceIfRestocked(InventoryLevel level, int availableBefore) {
+        if (availableBefore <= 0 && level.available() > 0) events.publishEvent(new VariantRestocked(level.getVariantId()));
     }
 
     /** Available quantity (on hand minus reserved) per variant id; missing variants count as 0. */
@@ -59,10 +69,12 @@ public class InventoryService {
         if (delta == 0) throw new BadRequestException("Adjustment must change the stock level");
         InventoryLevel level = levels.findForUpdate(variantId)
                 .orElseThrow(() -> new NotFoundException("No stock record for variant " + variantId));
+        int before = level.available();
         if (!level.adjust(delta)) {
             throw new BadRequestException("Stock cannot go below zero (currently " + level.getOnHand() + " on hand)");
         }
         adjustments.save(new InventoryAdjustment(variantId, delta, reason, note, level.getOnHand(), staffId));
+        announceIfRestocked(level, before);
         return new AdjustmentResult(variantId, level.getOnHand(), level.available(), level.isLow());
     }
 
@@ -80,7 +92,11 @@ public class InventoryService {
     }
 
     public void releaseReservation(Long variantId, int quantity) {
-        levels.findForUpdate(variantId).ifPresent(l -> l.release(quantity));
+        levels.findForUpdate(variantId).ifPresent(l -> {
+            int before = l.available();
+            l.release(quantity);
+            announceIfRestocked(l, before);
+        });
     }
 
     /** Paid order line: reserved stock leaves the shelf and is logged as SOLD. */
@@ -105,7 +121,9 @@ public class InventoryService {
     /** Returned/refunded items put back into stock. */
     public void restock(Long variantId, int quantity, Long orderId, String note, Long staffId) {
         levels.findForUpdate(variantId).ifPresent(l -> {
+            int before = l.available();
             l.adjust(quantity);
+            announceIfRestocked(l, before);
             adjustments.save(InventoryAdjustment.forOrder(variantId, quantity, AdjustmentReason.RETURNED, note,
                     l.getOnHand(), orderId, staffId));
         });

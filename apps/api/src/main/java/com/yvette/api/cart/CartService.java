@@ -102,6 +102,39 @@ public class CartService {
         return view(cart);
     }
 
+    /**
+     * On sign-in, the guest's bag joins the customer's saved bag (FR-CO-01): quantities are added up
+     * (capped), and the customer keeps one bag across devices. Returns the token to keep using.
+     */
+    public CartView attachToCustomer(Long customerId, UUID guestToken) {
+        Cart guest = carts.findByToken(guestToken).orElse(null);
+        Cart saved = carts.findFirstByCustomerIdOrderByUpdatedAtDesc(customerId).orElse(null);
+        if (guest != null && guest.getCustomerId() != null && !guest.getCustomerId().equals(customerId)) {
+            guest = null; // someone else's bag: never merge it
+        }
+        if (saved == null && guest == null) {
+            Cart fresh = new Cart(UUID.randomUUID());
+            fresh.assignTo(customerId);
+            return view(carts.save(fresh));
+        }
+        if (saved == null) {
+            guest.assignTo(customerId);
+            return view(guest);
+        }
+        if (guest != null && !guest.getId().equals(saved.getId())) {
+            for (CartItem item : guest.getItems()) {
+                if (saved.item(item.getVariantId()).isPresent() || saved.getItems().size() < Cart.MAX_LINES) {
+                    saved.add(item.getVariantId(), item.getQuantity());
+                }
+            }
+            if (saved.getDiscountCode() == null && guest.getDiscountCode() != null) {
+                saved.setDiscountCode(guest.getDiscountCode());
+            }
+            carts.delete(guest);
+        }
+        return view(saved);
+    }
+
     public Cart find(UUID token) {
         return carts.findByToken(token).orElseThrow(() -> new NotFoundException("Cart not found"));
     }

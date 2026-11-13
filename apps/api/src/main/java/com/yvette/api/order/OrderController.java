@@ -41,6 +41,18 @@ public class OrderController {
         return queries.view(number, token);
     }
 
+    public record LookupRequest(@jakarta.validation.constraints.NotBlank String number,
+                                @jakarta.validation.constraints.NotBlank String email) {}
+
+    public record LookupResult(String number, String accessToken) {}
+
+    /** Guest order lookup by order number + email (UC-09). Rate limited like a login. */
+    @PostMapping("/lookup")
+    public LookupResult lookup(@Valid @RequestBody LookupRequest request) {
+        Order order = orders.lookup(request.number().strip().toUpperCase(java.util.Locale.ROOT), request.email());
+        return new LookupResult(order.getNumber(), order.getAccessToken().toString());
+    }
+
     /** Starts a new payment attempt (after a decline, a cancelled M-Pesa prompt, or a different number). */
     @PostMapping("/{number}/pay")
     public PaymentView retry(@PathVariable String number, @Valid @RequestBody RetryPaymentRequest request) {

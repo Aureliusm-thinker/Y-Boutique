@@ -8,6 +8,7 @@ import { RecentlyViewed, RememberView } from "@/components/RecentlyViewed";
 import { SizeGuide } from "@/components/SizeGuide";
 import { TrackView } from "@/components/TrackView";
 import { VariantPicker } from "@/components/VariantPicker";
+import { WishlistButton } from "@/components/WishlistButton";
 import { getProduct } from "@/lib/api";
 import type { ProductDetail } from "@/lib/types";
 
@@ -113,8 +114,9 @@ async function ProductContent({ params }: Pick<PageProps<"/products/[slug]">, "p
           <div className="mt-4">
             <VariantPicker variants={product.variants} productTitle={product.title} />
           </div>
-          <div className="mt-4">
+          <div className="mt-4 flex items-center justify-between">
             <SizeGuide />
+            <WishlistButton productId={product.id} slug={product.slug} />
           </div>
           {product.description && <p className="mt-8 leading-relaxed text-stone-700">{product.description}</p>}
           {details.length > 0 && (
