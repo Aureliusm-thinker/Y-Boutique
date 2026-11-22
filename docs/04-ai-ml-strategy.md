@@ -88,7 +88,7 @@ Key design choices:
 | Step | When | Deliverable | Exit criteria |
 |---|---|---|---|
 | 0 | MVP (Phase 1) | Event tracking, product attributes, consent, data export | Events validated end-to-end; attributes ≥ 95% complete |
-| 1 | Phase 2 | Rule-based recs; search logs analysed; brand voice & policy docs written | Baseline metrics recorded |
+| 1 | Phase 2 | Rule-based recs (**built 2026-11-21:** recent-search + browsing "Picked for you", co-occurrence "Customers also viewed", impression/click tracking — `apps/api/.../recommend/`); search logs analysed; brand voice & policy docs written | Baseline metrics recorded |
 | 2 | Phase 3a | Semantic/hybrid search + ML recommendations (A/B) | ↑ search CTR, ↑ rec CTR vs. rules |
 | 3 | Phase 3b | AI Stylist beta (logged-in users, then all) | Eval suite pass rate ≥ 95%; hand-off works; cost per chat within budget |
 | 4 | Phase 3c | Size & fit, admin content generation, review summaries | ↓ size-related returns; listing time ↓ 50% |

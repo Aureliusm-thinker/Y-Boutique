@@ -3,6 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Suspense } from "react";
 import { CartLineControls, DiscountForm } from "@/components/CartControls";
+import { PickedForYou } from "@/components/PickedForYou";
 import { getCart } from "@/lib/cart";
 import { formatPrice } from "@/lib/format";
 
@@ -17,6 +18,7 @@ async function CartContent() {
         <Link href="/shop" className="mt-6 inline-block bg-stone-900 px-8 py-3 text-sm uppercase tracking-widest text-white">
           Start shopping
         </Link>
+        <PickedForYou placement="empty_cart" className="mt-20 text-left" />
       </div>
     );
   }

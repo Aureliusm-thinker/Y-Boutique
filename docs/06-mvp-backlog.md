@@ -97,7 +97,14 @@ Priority uses MoSCoW. Estimates (story points) to be added during sprint plannin
 
 ## Post-MVP (parked)
 - Newsletter & abandoned-cart flows (Phase 2)
-- Rule-based related products (Phase 2)
+- ~~Rule-based related products (Phase 2)~~ ✅ built 2026-11-21 — see below
+
+## Recommendations, step 1 (built 2026-11-21, ahead of Phase 2)
+| ID | Story | Status |
+|---|---|---|
+| R-1 | As a shopper, I want products picked from my recent searches and browsing | ✅ "Picked for you" on home, empty bag and no-results pages; caption says why ("Based on your searches for …"); popular products for new visitors or without analytics consent |
+| R-2 | As a shopper, I want to see what other customers looked at | ✅ "Customers also viewed" on product pages from co-views and co-purchases (rebuilt every 6 h, needs ≥ 2 shoppers per pair); "You may also like" (attribute similarity) until there is enough data |
+| R-3 | As the business, I want to measure recommendations | ✅ `recommendation_impression` / `recommendation_click` events per placement — the baseline any ML model must beat |
 - Gift cards, gift wrap, photo reviews
 - All AI features AI-1 … AI-9 (Phase 3+, see [AI/ML Strategy](04-ai-ml-strategy.md))
 - Loyalty programme, multi-currency, native apps

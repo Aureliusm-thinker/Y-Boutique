@@ -183,3 +183,7 @@ export type Order = {
   timeline: { type: string; message: string; at: string }[];
   payment: PaymentInfo | null;
 };
+
+// Recommendations (apps/api/.../recommend/RecommendationService.java)
+export type ForYou = { personalised: boolean; basedOnSearches: string[]; items: ProductSummary[] };
+export type AlsoViewed = { basedOn: "customers" | "similar"; items: ProductSummary[] };

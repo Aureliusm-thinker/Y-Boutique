@@ -9,7 +9,7 @@ import { SizeGuide } from "@/components/SizeGuide";
 import { TrackView } from "@/components/TrackView";
 import { VariantPicker } from "@/components/VariantPicker";
 import { WishlistButton } from "@/components/WishlistButton";
-import { getProduct, getReviews, type ProductReviews } from "@/lib/api";
+import { getAlsoViewed, getProduct, getReviews, type ProductReviews } from "@/lib/api";
 import { ProductReviewList, Stars } from "@/components/ProductReviews";
 import type { ProductDetail } from "@/lib/types";
 
@@ -69,7 +69,11 @@ function ProductJsonLd({ product, reviews }: { product: ProductDetail; reviews: 
 
 async function ProductContent({ params }: Pick<PageProps<"/products/[slug]">, "params">) {
   const { slug } = await params;
-  const [product, reviews] = await Promise.all([getProduct(slug), getReviews(slug).catch(() => null)]);
+  const [product, reviews, alsoViewed] = await Promise.all([
+    getProduct(slug),
+    getReviews(slug).catch(() => null),
+    getAlsoViewed(slug).catch(() => null),
+  ]);
   if (!product) notFound();
 
   const details = [
@@ -147,6 +151,15 @@ async function ProductContent({ params }: Pick<PageProps<"/products/[slug]">, "p
         <section className="mt-20">
           <h2 className="mb-6 font-serif text-2xl">Complete the look</h2>
           <ProductGrid products={product.completeTheLook} />
+        </section>
+      )}
+
+      {alsoViewed && alsoViewed.items.length > 0 && (
+        <section className="mt-20">
+          <h2 className="mb-6 font-serif text-2xl">
+            {alsoViewed.basedOn === "customers" ? "Customers also viewed" : "You may also like"}
+          </h2>
+          <ProductGrid products={alsoViewed.items} />
         </section>
       )}
 

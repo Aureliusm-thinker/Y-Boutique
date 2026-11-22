@@ -2,6 +2,7 @@ import "server-only";
 import { cacheLife, cacheTag } from "next/cache";
 import { filtersToQuery } from "./shop-filters";
 import type {
+  AlsoViewed,
   Category,
   Facets,
   Page,
@@ -58,6 +59,22 @@ export async function getProduct(slug: string): Promise<ProductDetail | null> {
   cacheLife("minutes");
   cacheTag("products", `product:${slug}`);
   return getJson<ProductDetail>(`/api/v1/catalog/products/${encodeURIComponent(slug)}`);
+}
+
+/**
+ * "Customers also viewed" — rebuilt from shopper behaviour every few hours, so an hour's cache is plenty.
+ * Throws on API errors (so a failure isn't cached); callers fall back to showing nothing.
+ */
+export async function getAlsoViewed(slug: string): Promise<AlsoViewed> {
+  "use cache";
+  cacheLife("hours");
+  cacheTag("products", `product:${slug}`);
+  return (
+    (await getJson<AlsoViewed>(`/api/v1/catalog/products/${encodeURIComponent(slug)}/also-viewed`)) ?? {
+      basedOn: "similar",
+      items: [],
+    }
+  );
 }
 
 export async function getSitemapEntries(): Promise<SitemapEntry[]> {

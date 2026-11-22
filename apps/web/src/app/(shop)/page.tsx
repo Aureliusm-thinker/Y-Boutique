@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Hero } from "@/components/Hero";
+import { PickedForYou } from "@/components/PickedForYou";
 import { ProductGrid } from "@/components/ProductCard";
 import { RecentlyViewed } from "@/components/RecentlyViewed";
 import { getCategories, getProducts, getSiteContent, type HomeContent } from "@/lib/api";
@@ -37,6 +38,7 @@ export default async function HomePage() {
       <section className="mx-auto max-w-6xl px-4 py-16">
         <h2 className="mb-8 font-serif text-3xl">{home.featuredTitle ?? "New arrivals"}</h2>
         <Featured home={home} />
+        <PickedForYou placement="home" />
         <RecentlyViewed />
       </section>
       <Categories />

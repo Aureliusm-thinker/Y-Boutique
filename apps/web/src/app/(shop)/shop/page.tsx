@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
 import { FilterPanel } from "@/components/FilterPanel";
+import { PickedForYou } from "@/components/PickedForYou";
 import { ProductGrid, ProductGridSkeleton } from "@/components/ProductCard";
 import { TrackView } from "@/components/TrackView";
 import { getCategories, getFacets, getProducts } from "@/lib/api";
@@ -80,7 +81,7 @@ async function Filters({ filters }: { filters: ShopFilters }) {
 }
 
 async function NoResults({ filters }: { filters: ShopFilters }) {
-  const [categories, newest] = await Promise.all([getCategories(), getProducts({})]);
+  const categories = await getCategories();
   return (
     <div className="py-8">
       <p className="text-lg">
@@ -96,12 +97,7 @@ async function NoResults({ filters }: { filters: ShopFilters }) {
           </Link>
         ))}
       </div>
-      {newest.items.length > 0 && (
-        <>
-          <h2 className="mb-6 mt-12 font-serif text-2xl">New arrivals you might like</h2>
-          <ProductGrid products={newest.items.slice(0, 4)} />
-        </>
-      )}
+      <PickedForYou placement="no_results" fallbackTitle="New arrivals you might like" className="mt-12" />
     </div>
   );
 }

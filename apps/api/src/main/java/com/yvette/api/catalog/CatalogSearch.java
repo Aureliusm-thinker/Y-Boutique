@@ -152,7 +152,8 @@ public class CatalogSearch {
                 + (having.isEmpty() ? "" : " HAVING " + String.join(" AND ", having));
     }
 
-    static List<String> words(String query) {
+    /** The distinct lower-case words of a search (at most six), as matched by {@link #search}. */
+    public static List<String> words(String query) {
         return java.util.Arrays.stream(query.toLowerCase(Locale.ROOT).split("[^\\p{L}\\p{N}]+"))
                 .filter(w -> !w.isBlank())
                 .distinct()

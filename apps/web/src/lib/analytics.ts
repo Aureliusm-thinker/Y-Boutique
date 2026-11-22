@@ -36,6 +36,15 @@ function anonymousId(): string {
   return id;
 }
 
+/**
+ * The anonymous id, but only for visitors who accepted analytics (and never creates one).
+ * Used to ask the API for recommendations built from this visitor's own events.
+ */
+export function consentedVisitorId(): string | null {
+  if (getConsent() !== "granted") return null;
+  return storage()?.getItem(ANON_KEY) ?? null;
+}
+
 export function track(name: string, properties: Record<string, unknown> = {}) {
   if (getConsent() !== "granted") return;
   const body = JSON.stringify({
