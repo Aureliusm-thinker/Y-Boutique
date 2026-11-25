@@ -20,6 +20,8 @@ docs/         Plan, PRD, actors, AI strategy, architecture, backlog, decisions
 
 ## Run it locally
 
+> New here? **[GETTING-STARTED.md](GETTING-STARTED.md)** has step-by-step setup, prerequisites and troubleshooting.
+
 Prerequisites: Java 21, Node 20+, Docker.
 
 ```bash
@@ -58,7 +60,7 @@ without `JWT_SECRET`, test payments are off, staff must use two-step sign-in, an
 ### Tests
 
 ```bash
-cd apps/api && ./mvnw test     # 43 integration tests, real Postgres via Testcontainers (Docker must be running)
+cd apps/api && ./mvnw test     # 56 tests, real Postgres via Testcontainers (Docker must be running)
 cd apps/web && npm run lint && npx tsc --noEmit && npm run build
 ```
 
@@ -66,12 +68,12 @@ cd apps/web && npm run lint && npx tsc --noEmit && npm run build
 
 | Area | What's there |
 |---|---|
-| **Shop** | Editable home page and announcement bar · categories · filters (size, colour, price, in stock) and sorting in the URL · search with autocomplete and typo tolerance ("dreses" finds dresses) · product page with zoomable gallery, colour/size picker, "only N left", size guide, reviews with fit summary, "complete the look", recently viewed · wishlist · back-in-stock emails |
+| **Shop** | Editable home page and announcement bar · categories · filters (size, colour, price, in stock) and sorting in the URL · search with autocomplete and typo tolerance ("dreses" finds dresses) · product page with zoomable gallery, colour/size picker, "only N left", size guide, reviews with fit summary, "complete the look", recently viewed · "Picked for you" from recent searches and browsing · "Customers also viewed" · wishlist · back-in-stock emails |
 | **Bag & checkout** | Bag kept across visits and devices · discount codes and automatic sales · Kenyan delivery options (Nairobi, countrywide, same-day, collection) with free-delivery thresholds · guest checkout · M-Pesa (STK push) and card · stock held for 30 minutes while paying — two people can never buy the last item · confirmation page, email and printable invoice |
 | **Customer accounts** | Register, email verification (links past guest orders), sign-in, password reset · profile, style preferences, saved addresses · order history and tracking · returns with reasons (incl. size) · reviews for delivered items · download or delete my data · guest order lookup |
-| **Back office** | Dashboard (sales, orders, average order, top products, funnel, return reasons, work queue) · orders queue, shipping with tracking, delivery, refunds with restock, cancellations, notes, packing slips · customers with notes · returns workflow · review moderation · products, categories, stock with audit trail, "complete the look" · discount codes and scheduled sales · pages, home page and announcement with preview · staff and roles · two-step sign-in (authenticator app) |
+| **Back office** | Dashboard (sales, orders, average order, top products, funnel, return reasons, work queue) · orders queue, shipping with tracking, delivery, refunds with restock, cancellations, notes, packing slips · customers with notes · returns workflow · review moderation · products (incl. spreadsheet export/import with preview), categories, stock with audit trail, "complete the look" · discount codes and scheduled sales · pages, home page and announcement with preview · staff and roles · two-step sign-in (authenticator app) |
 | **SEO & privacy** | Server-rendered pages, `sitemap.xml`, `robots.txt`, product structured data with price, stock and ratings · consent banner; behavioural events stored only with consent · legal pages editable by staff |
-| **Not yet** | Sentry/uptime monitoring (needs an account) · Google/Apple sign-in (needs app credentials) · CSV import/export · AI features (Phase 3, [AI/ML strategy](docs/04-ai-ml-strategy.md)) |
+| **Not yet** | Sentry/uptime monitoring (needs an account) · Google/Apple sign-in (needs app credentials) · AI features (Phase 3, [AI/ML strategy](docs/04-ai-ml-strategy.md)) |
 
 ## Going live: settings to provide
 

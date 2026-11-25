@@ -16,7 +16,10 @@ import org.springframework.test.context.ActiveProfiles;
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 @Import(TestcontainersConfiguration.class)
-@SpringBootTest(properties = "yvette.media.local-dir=target/test-media")
+@SpringBootTest(properties = {
+        "yvette.media.local-dir=target/test-media",
+        // Tests run against the small base catalogue (dev-seed), not the full shop catalogue.
+        "spring.flyway.locations=classpath:db/migration,classpath:db/dev-seed"})
 @AutoConfigureMockMvc
 @ActiveProfiles("dev")
 public @interface ApiIntegrationTest {}

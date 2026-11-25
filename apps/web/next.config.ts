@@ -17,7 +17,8 @@ const nextConfig: NextConfig = {
   images: {
     remotePatterns: [
       // Object form (no `search` key) so URLs with query strings like ?text=... are allowed.
-      { protocol: "https", hostname: "placehold.co", pathname: "/**" }, // demo catalogue placeholders
+      { protocol: "https", hostname: "placehold.co", pathname: "/**" }, // test catalogue placeholders
+      { protocol: "https", hostname: "images.unsplash.com", pathname: "/**" }, // catalogue photos
       mediaPattern,
     ],
     // Only true when media is served from this machine (local development).
