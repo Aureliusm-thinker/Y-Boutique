@@ -1,5 +1,6 @@
 package com.yvette.api.catalog;
 
+import java.util.List;
 import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -14,6 +15,10 @@ public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpec
     Page<Product> findByStatusAndCategorySlug(ProductStatus status, String categorySlug, Pageable pageable);
 
     Optional<Product> findBySlugAndStatus(String slug, ProductStatus status);
+
+    Optional<Product> findBySlug(String slug);
+
+    List<Product> findAllByOrderByIdAsc();
 
     boolean existsBySlug(String slug);
 

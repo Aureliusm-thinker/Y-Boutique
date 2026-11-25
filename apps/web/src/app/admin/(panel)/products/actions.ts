@@ -97,3 +97,47 @@ export async function findProducts(q: string): Promise<{ id: number; title: stri
   );
   return page.items.map(({ id, title, status }) => ({ id, title, status }));
 }
+
+export type ImportResult = {
+  applied: boolean;
+  rows: number;
+  productsCreated: number;
+  productsUpdated: number;
+  variantsCreated: number;
+  variantsUpdated: number;
+  products: {
+    slug: string | null;
+    title: string;
+    created: boolean;
+    newVariants: number;
+    updatedVariants: number;
+    changedFields: string[];
+  }[];
+  errors: { line: number; message: string }[];
+  notes: string[];
+};
+
+/** Checks (preview) or saves a product spreadsheet. The API validates every row and saves all or nothing. */
+export async function importProducts(
+  formData: FormData,
+): Promise<ActionResult & { result?: ImportResult }> {
+  const file = formData.get("file");
+  const apply = formData.get("apply") === "true";
+  if (!(file instanceof File) || file.size === 0) return { ok: false, message: "Choose a CSV file first." };
+  if (file.size > 5 * 1024 * 1024) return { ok: false, message: "The file is larger than 5 MB; split it into smaller files." };
+  let result: ImportResult;
+  try {
+    result = await adminFetch<ImportResult>(`/api/v1/admin/products/import?dryRun=${!apply}`, {
+      method: "POST",
+      headers: { "Content-Type": "text/csv" },
+      body: await file.arrayBuffer(),
+    });
+  } catch (e) {
+    return toActionError(e);
+  }
+  if (result.applied) {
+    refreshStorefront("products");
+    refresh();
+  }
+  return { ok: result.errors.length === 0, result };
+}

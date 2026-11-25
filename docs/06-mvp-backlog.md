@@ -28,7 +28,7 @@ Priority uses MoSCoW. Estimates (story points) to be added during sprint plannin
 | E1-2 | As Inventory Staff, I want to set structured attributes (colour, material, fit, occasion, style tags) | ✅ Required attributes validated before publishing (FR-DA-04) | M |
 | E1-3 | As Inventory Staff, I want to organise products into collections and categories | ✅ Manual & rule-based collections | M |
 | E1-4 | As Inventory Staff, I want to adjust stock with a reason | ✅ Adjustment history recorded; low-stock alert at threshold (FR-AD-04) | M |
-| E1-5 | As Inventory Staff, I want to import/export products via CSV | ⏳ Validates rows, reports errors | S |
+| E1-5 | As Inventory Staff, I want to import/export products via CSV | ✅ Validates rows, reports errors *(2026-11-22: Products → Export CSV / Import CSV; preview first, all-or-nothing, errors by spreadsheet line; new products saved as drafts)* | S |
 
 ## Epic E2 — Storefront & Discovery (Sprint 2)
 | ID | Story | Acceptance criteria | Pri |

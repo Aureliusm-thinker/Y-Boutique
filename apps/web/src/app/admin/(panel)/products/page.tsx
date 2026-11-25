@@ -56,11 +56,22 @@ async function ProductTable({ searchParams }: Pick<PageProps<"/admin/products">,
             </Link>
           ))}
         </div>
-        {can.editCatalog(me.role) && (
-          <Link href="/admin/products/new" className="admin-btn-primary">
-            Add product
-          </Link>
-        )}
+        <div className="flex gap-2">
+          {/* A plain link: the browser downloads the file from the route handler (not a page). */}
+          <a href="/admin/products/export" download className="admin-btn">
+            Export CSV
+          </a>
+          {can.editCatalog(me.role) && (
+            <>
+              <Link href="/admin/products/import" className="admin-btn">
+                Import CSV
+              </Link>
+              <Link href="/admin/products/new" className="admin-btn-primary">
+                Add product
+              </Link>
+            </>
+          )}
+        </div>
       </div>
 
       <div className="admin-card overflow-x-auto p-0">
